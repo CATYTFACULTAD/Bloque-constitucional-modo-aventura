@@ -1046,11 +1046,17 @@
     });
 
     restartBtn.addEventListener("click", () => {
-      gameState = "menu";
-      menu.classList.remove("hidden");
-      hud.classList.add("hidden");
-      gameOverBox.classList.add("hidden");
-    });
+  // Volver realmente al estado inicial
+  gameState = "menu";
+  resetGameState();                 // resetea pájaro, puntos y preguntas usadas
+
+  // Mostrar solo el menú, ocultar todo lo demás
+  menu.classList.remove("hidden");
+  hud.classList.add("hidden");
+  gameOverBox.classList.add("hidden");
+  questionBox.classList.add("hidden"); // 👈 importante: ocultar también la caja de preguntas
+});
+
 
     window.addEventListener("keydown", (e) => {
       if (e.code === "Space") {
