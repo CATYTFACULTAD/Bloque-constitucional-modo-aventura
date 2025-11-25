@@ -1046,9 +1046,22 @@
     });
 
     restartBtn.addEventListener("click", () => {
-  // Volver realmente al estado inicial
+  // Volver al menú real
   gameState = "menu";
-  resetGameState();                 // resetea pájaro, puntos y preguntas usadas
+  resetGameState();
+
+  // Mostrar solo el menú
+  menu.classList.remove("hidden");
+  hud.classList.add("hidden");
+
+  // Ocultar ambas cajas superpuestas
+  gameOverBox.classList.add("hidden");
+  questionBox.classList.add("hidden");   // 🔥 ESTA LÍNEA ES LA CLAVE
+
+  // Reset visual del canvas
+  draw();
+});
+
 
   // Mostrar solo el menú, ocultar todo lo demás
   menu.classList.remove("hidden");
