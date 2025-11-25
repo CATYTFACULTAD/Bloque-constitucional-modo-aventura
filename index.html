@@ -35,8 +35,7 @@
 
     #menu,
     #hud,
-    #questionBox,
-    #gameOverBox {
+    #questionBox {
       font-size: 14px;
     }
 
@@ -83,11 +82,10 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.7);
     }
 
-    #questionBox,
-    #gameOverBox {
+    #questionBox {
       position: absolute;
       inset: 0;
-      display: none; /* ocultos al inicio */
+      display: none; /* oculto al inicio */
       align-items: center;
       justify-content: center;
       pointer-events: auto;
@@ -149,15 +147,6 @@
           <button class="optionBtn" data-index="3"></button>
         </div>
         <p class="small">Si contestás bien, el juego continúa. Si no, termina.</p>
-      </div>
-    </div>
-
-    <!-- Caja de Game Over -->
-    <div id="gameOverBox">
-      <div class="overlayCard">
-        <h2>Fin del juego</h2>
-        <p id="gameOverText"></p>
-        <button id="restartBtn">Volver al menú</button>
       </div>
     </div>
   </div>
@@ -691,11 +680,7 @@
     const questionText = document.getElementById("questionText");
     const optionButtons = document.querySelectorAll(".optionBtn");
 
-    const gameOverBox = document.getElementById("gameOverBox");
-    const gameOverText = document.getElementById("gameOverText");
-    const restartBtn = document.getElementById("restartBtn");
-
-    let gameState = "menu"; // "menu" | "playing" | "question" | "gameover"
+    let gameState = "menu"; // "menu" | "playing" | "question"
     let currentDifficultyKey = null;
     let frameCount = 0;
     let obstacles = [];
@@ -756,6 +741,15 @@
       difficultyLabel.textContent = "Dificultad: -";
     }
 
+    function goToMenu() {
+      gameState = "menu";
+      resetGameState();
+      questionBox.style.display = "none";
+      hud.style.display = "none";
+      menu.style.display = "flex";
+      draw();
+    }
+
     function startGame(difficultyKey) {
       currentDifficultyKey = difficultyKey;
       currentDifficulty = difficultyConfig[difficultyKey];
@@ -763,21 +757,12 @@
 
       resetGameState();
 
-      // Mostrar HUD y ocultar menú
       hud.style.display = "flex";
-      menu.style.display = "flex"; // se verá pero afuera del canvas
-      gameOverBox.style.display = "none";
+      menu.style.display = "flex"; // se ve abajo igual
       questionBox.style.display = "none";
 
       gameState = "playing";
       loop();
-    }
-
-    function endGame(message) {
-      gameState = "gameover";
-      questionBox.style.display = "none";
-      gameOverText.textContent = message || "Perdiste. 😅";
-      gameOverBox.style.display = "flex";
     }
 
     function askQuestion() {
@@ -789,7 +774,8 @@
       }
 
       if (available.length === 0) {
-        endGame("¡Contestaste todas las preguntas disponibles! 🎉");
+        alert("¡Contestaste todas las preguntas disponibles! 🎉");
+        goToMenu();
         return;
       }
 
@@ -810,7 +796,6 @@
         }
       });
 
-      gameOverBox.style.display = "none";
       questionBox.style.display = "flex";
       gameState = "question";
     }
@@ -825,7 +810,8 @@
         gameState = "playing";
         loop();
       } else {
-        endGame("Respuesta incorrecta. El pajarito se cansó. 🐦💥");
+        alert("Respuesta incorrecta. Fin del juego 🐦💥");
+        goToMenu();
       }
     }
 
@@ -1023,20 +1009,6 @@
           handleAnswer(idx);
         }
       });
-    });
-
-    restartBtn.addEventListener("click", () => {
-      // Volver al menú limpio
-      gameState = "menu";
-      resetGameState();
-
-      questionBox.style.display = "none";
-      gameOverBox.style.display = "none";
-
-      hud.style.display = "none";
-      menu.style.display = "flex";
-
-      draw();
     });
 
     window.addEventListener("keydown", (e) => {
