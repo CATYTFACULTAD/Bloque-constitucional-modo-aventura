@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>El Bloque Constitucional: Modo Aventura</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b1020;
+      color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+    }
+
+    h1 {
+      margin: 10px 0 5px;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    #gameWrapper {
+      position: relative;
+    }
+
+    #gameCanvas {
+      background: linear-gradient(#7be0ff, #e0f8ff);
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: block;
+    }
+
+    #menu,
+    #hud,
+    #questionBox,
+    #gameOverBox {
+      font-size: 14px;
+    }
+
+    #menu {
+      margin-top: 6px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      background: #ffdd57;
+      color: #332900;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+      background: #ffe680;
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    #hud {
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    }
+
+    #questionBox,
+    #gameOverBox {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .overlayCard {
+      pointer-events: auto;
+      background: rgba(15, 15, 35, 0.92);
+      border-radius: 14px;
+      padding: 16px;
+      max-width: 320px;
+      width: 80%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .overlayCard h2 {
+      margin-top: 0;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .overlayCard p {
+      font-size: 14px;
+      margin: 4px 0 10px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .small {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <h1>El Bloque Constitucional: Modo Aventura 🐦⚖️</h1>
+  <div id="gameWrapper">
+    <canvas id="gameCanvas" width="480" height="320"></canvas>
+
+    <div id="hud" class="hidden">
+      <span id="scoreLabel">Puntos: 0</span>
+      <span id="difficultyLabel">Dificultad: -</span>
+    </div>
+
+    <!-- Caja de preguntas -->
+    <div id="questionBox" class="hidden">
+      <div class="overlayCard">
+        <h2>¡Ups! El pajarito chocó</h2>
+        <p id="questionText"></p>
+        <div class="options">
+          <button class="optionBtn" data-index="0"></button>
+          <button class="optionBtn" data-index="1"></button>
+          <button class="optionBtn" data-index="2"></button>
+          <button class="optionBtn" data-index="3"></button>
+        </div>
+        <p class="small">Si contestás bien, el juego continúa. Si no, termina.</p>
+      </div>
+    </div>
+
+    <!-- Caja de Game Over -->
+    <div id="gameOverBox" class="hidden">
+      <div class="overlayCard">
+        <h2>Fin del juego</h2>
+        <p id="gameOverText"></p>
+        <button id="restartBtn">Volver al menú</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="menu">
+    <span style="align-self:center;font-size:13px;">Elegí dificultad:</span>
+    <button data-diff="facil">Fácil</button>
+    <button data-diff="medio">Medio</button>
+    <button data-diff="dificil">Difícil</button>
+  </div>
+
+  <script>
+    // =======================
+    // PREGUNTAS (50 ÍTEMS)
+    // =======================
+    const questionsPool = [
+      {
+        text: "El Bloque Constitucional Federal está compuesto por:",
+        options: [
+          "Códigos de fondo y tratados sin jerarquía",
+          "Constitución Nacional + Tratados de DDHH con jerarquía constitucional",
+          "Leyes nacionales",
+          "Sentencias de la Corte IDH"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "La jerarquía normativa puede graficarse como:",
+        options: [
+          "Un triángulo",
+          "Una pirámide",
+          "Un trapecio",
+          "Un rectángulo"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "¿Qué característica distingue al Bloque Constitucional Federal?",
+        options: [
+          "Regula solo cuestiones civiles",
+          "Es la fuente jurídica más baja",
+          "Goza de supremacía frente a normas inferiores",
+          "Solo se aplica a casos penales"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "Los tratados internacionales con jerarquía constitucional fueron incorporados principalmente en:",
+        options: [
+          "Reforma de 1957",
+          "Reforma de 1994",
+          "Reforma de 1860",
+          "Reforma de 2001"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "Las normas ubicadas en el nivel superior del sistema son generalmente:",
+        options: [
+          "Detalladas y reglamentarias",
+          "Breves y genéricas",
+          "Dirigidas solo al poder ejecutivo",
+          "De aplicación exclusivamente municipal"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "El control de constitucionalidad argentino es:",
+        options: [
+          "Concentrado",
+          "Difuso",
+          "Legislativo",
+          "Realizado por la Comisión IDH"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "¿Quiénes pueden ejercer control de constitucionalidad?",
+        options: [
+          "Solo la Corte Suprema",
+          "Solo los jueces federales",
+          "Todos los jueces",
+          "Los legisladores"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "La función de no aplicar normas contrarias al Bloque Constitucional Federal es denominada:",
+        options: [
+          "Función legislativa",
+          "Función positiva",
+          "Función negativa o represiva",
+          "Función administrativa"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "El control de constitucionalidad tiene efectos:",
+        options: [
+          "Erga omnes automáticamente",
+          "Inter partes",
+          "Solo territoriales",
+          "Sobre todas las leyes vigentes"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "El caso Halabi constituye una excepción porque:",
+        options: [
+          "No fue decidido por la Corte",
+          "Tuvo efecto colectivo",
+          "Invalidó tratados internacionales",
+          "Eliminó el control constitucional"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "La Corte IDH señaló en “Almonacid Arellano” que:",
+        options: [
+          "Los jueces pueden ignorar el SIDH",
+          "Las normas locales contrarias a la CADH deben aplicarse igualmente",
+          "Una norma local contraria a la CADH es inconvencional",
+          "El derecho internacional carece de fuerza vinculante"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "El control de convencionalidad puede ser:",
+        options: [
+          "Solo a petición de parte",
+          "Solo de oficio",
+          "A petición de parte o de oficio",
+          "Realizado solo al final del proceso"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "¿Qué norma de Tucumán regula el control constitucional?",
+        options: [
+          "Constitución de Tucumán, art. 10",
+          "Código Procesal Constitucional, art. 87",
+          "Ley 24.660",
+          "Ley Provincial 6.315"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "Una diferencia entre Corte IDH y Comisión IDH es que:",
+        options: [
+          "Ambas tienen competencia litigiosa",
+          "La Comisión resuelve controversias",
+          "La Corte dicta sentencias obligatorias",
+          "La Corte solo emite recomendaciones"
+        ],
+        correctIndex: 2
+      },
+      {
+        // SOLO A y C, correcta A
+        text: "Según la CSJN en Carranza Latrubesse, las recomendaciones de la Comisión IDH son:",
+        options: [
+          "No vinculantes",
+          "Vinculantes"
+        ],
+        correctIndex: 0
+      },
+      {
+        text: "¿Qué derecho reclamaba S.R.L.?",
+        options: [
+          "Acceso a salidas transitorias",
+          "Derecho a trabajar",
+          "Derecho a estudiar su carrera universitaria",
+          "Reducción de condena"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "¿Qué tipo de acción presentó S.R.L.?",
+        options: [
+          "Amparo",
+          "Recurso de casación",
+          "Habeas corpus correctivo",
+          "Recurso de queja"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "El único derecho del que está privada una persona condenada es:",
+        options: [
+          "Educación",
+          "Salud",
+          "Libertad ambulatoria",
+          "Participación política"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "El paradigma adecuado para interpretar el caso es el de:",
+        options: [
+          "Seguridad",
+          "Orden público",
+          "Derechos Humanos",
+          "Prevención del delito"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "La CSJT determinó que pedir informes al Servicio Penitenciario:",
+        options: [
+          "Era necesario siempre",
+          "Estaba prohibido por la ley 26.206",
+          "No estaba previsto y generaba demoras inconstitucionales",
+          "Resultaba irrelevante para los permisos"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "La Ley 26.206 establece que el derecho a la educación en contextos de encierro:",
+        options: [
+          "Puede limitarse según la conducta",
+          "Requiere autorización ministerial",
+          "No admite limitación alguna por la situación de encierro",
+          "Depende del criterio del director del penal"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "El fundamento del derecho a estudiar según la CSJT se basa en:",
+        options: [
+          "Los fines de la pena",
+          "Las necesidades de reinserción",
+          "La propia condición humana del sujeto",
+          "La disponibilidad presupuestaria"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "¿Qué ordenó la CSJT al juez de ejecución?",
+        options: [
+          "Negar los permisos",
+          "Dictar una nueva condena",
+          "Garantizar el cursado regular y rendir exámenes",
+          "Solicitar más informes al servicio penitenciario"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "¿Cuál fue el principal obstáculo que impedía el ejercicio del derecho?",
+        options: [
+          "Falta de transporte",
+          "Demora causada por informes penitenciarios",
+          "Falta de cupo en la universidad",
+          "Problemas de conducta de S.R.L."
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "La educación para personas privadas de libertad se encuentra protegida principalmente por:",
+        options: [
+          "Reglamentos internos",
+          "La Constitución y tratados internacionales",
+          "Decretos penitenciarios",
+          "Informes judiciales"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "¿Qué declaró la jueza respecto del art. 562 CCyC?",
+        options: [
+          "Su constitucionalidad",
+          "Su inconstitucionalidad e inconvencionalidad parcial",
+          "Su inaplicabilidad administrativa",
+          "Su derogación total"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "Los peticionantes recurrían a la GS porque:",
+        options: [
+          "No querían gestar por razones laborales",
+          "La mujer peticionante padecía patologías que hacían inviable el embarazo",
+          "Había una prohibición legal expresa",
+          "Era la técnica más económica"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "¿Qué derechos invocó la jueza para fundamentar la autorización?",
+        options: [
+          "Derecho administrativo",
+          "Derecho penal",
+          "Derechos a conformar una familia y a la salud reproductiva",
+          "Derechos comerciales"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "La filiación en este caso se determinó a partir de:",
+        options: [
+          "La mujer gestante",
+          "La voluntad procreacional y material genético",
+          "El registro civil",
+          "Los plazos procesales"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "La jueza destacó especialmente el principio de:",
+        options: [
+          "Neutralidad del Estado",
+          "Interés superior del niño",
+          "Reserva de ley",
+          "Orden público"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "La GS no fue regulada en el CCyC porque:",
+        options: [
+          "No existía la técnica",
+          "Se consideró que requería debate interdisciplinario profundo",
+          "Era ilegal en todo el mundo",
+          "No había casos en Argentina"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "En la sentencia se ordenó que el niño/a:",
+        options: [
+          "Sea inscrito como hijo de la gestante",
+          "No tenga filiación hasta una reforma legal",
+          "Sea inscrito con los apellidos de los padres genéticos",
+          "Sea declarado en estado de adoptabilidad"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "La inconstitucionalidad declarada fue:",
+        options: [
+          "Total",
+          "Parcial",
+          "Errónea",
+          "Retroactiva a todas las familias"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "El primer leading case estadounidense fue:",
+        options: [
+          "Plessy v. Ferguson",
+          "Brown v. Board",
+          "Marbury v. Madison",
+          "Miranda v. Arizona"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "El primer antecedente argentino de control es:",
+        options: [
+          "Halabi",
+          "Sojo",
+          "Carranza Latrubesse",
+          "Acosta"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "El caso Sojo versaba sobre:",
+        options: [
+          "Libertad de culto",
+          "Libertad de expresión y prisión ordenada por la Cámara de Diputados",
+          "Acceso a la educación",
+          "Derecho a la propiedad"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "Las opiniones consultivas de la Corte IDH son:",
+        options: [
+          "Sentencias obligatorias",
+          "Recomendaciones sin valor",
+          "Interpretaciones autorizadas del Pacto de San José",
+          "Resoluciones disciplinarias"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "Las sentencias de la Corte IDH que no involucran a Argentina:",
+        options: [
+          "Son obligatorias",
+          "Son aceptadas como doctrina",
+          "No pueden citarse",
+          "Modifican automáticamente las leyes locales"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "La Comisión IDH emite:",
+        options: [
+          "Sentencias obligatorias",
+          "Opiniones, recomendaciones e informes",
+          "Órdenes judiciales",
+          "Decretos ejecutivos"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "El control de constitucionalidad evita que:",
+        options: [
+          "El poder judicial legisle",
+          "Se apliquen normas contrarias al bloque constitucional",
+          "Los jueces analicen tratados",
+          "El Congreso regule derechos"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "El paradigma de seguridad aplicado en el caso S.R.L.:",
+        options: [
+          "Reconocía plenamente el derecho a estudiar",
+          "Supeditaba los permisos a informes penitenciarios y buena conducta",
+          "Eliminaba la educación en cárceles",
+          "Permitía un acceso inmediato a las clases"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "El texto utiliza el ejemplo del trapecio para:",
+        options: [
+          "Identificar niveles del Poder Judicial",
+          "Representar la jerarquía normativa",
+          "Explicar tipos de tratados",
+          "Describir el proceso legislativo"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "El fallo S.R.L. representa un ejemplo de:",
+        options: [
+          "Control de constitucionalidad correcto y respetuoso del SIDH",
+          "Desconocimiento del sistema interamericano",
+          "Prohibición de estudiar en prisión",
+          "Fallo disciplinario"
+        ],
+        correctIndex: 0
+      },
+      {
+        text: "El control judicial es un mecanismo:",
+        options: [
+          "Administrativo",
+          "Legislativo",
+          "Interpoderes e intrapoder",
+          "Exclusivo del Ejecutivo"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "La magistrada del caso GS sostuvo que el Estado debe:",
+        options: [
+          "Interferir en los proyectos familiares",
+          "Obstaculizar técnicas de reproducción",
+          "No interferir y permitir el acceso a salud reproductiva",
+          "Limitar los avances científicos"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "El derecho internacional de DDHH integra el bloque constitucional porque:",
+        options: [
+          "Es opcional para los jueces",
+          "Fue ratificado libremente por el Estado argentino",
+          "No tiene jerarquía normativa",
+          "Es inferior a las leyes locales"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "La condición de ser humano implica:",
+        options: [
+          "Limitación de derechos",
+          "Necesidad de autorización para estudiar",
+          "Titularidad del derecho a la educación",
+          "Pérdida de derechos al ser condenado"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "La educación en cárceles debe ser:",
+        options: [
+          "Restringida a condenados con buena conducta",
+          "Considerada un tratamiento opcional",
+          "Garantizada sin discriminación",
+          "Decidida por el director del penal"
+        ],
+        correctIndex: 2
+      },
+      {
+        text: "La jueza del caso GS utilizó tratados como:",
+        options: [
+          "Convención del Niño y CEDAW",
+          "Convención de Viena",
+          "Pacto de Varsovia",
+          "Tratado Antártico"
+        ],
+        correctIndex: 0
+      },
+      {
+        text: "El texto concluye que el control de constitucionalidad es:",
+        options: [
+          "Un poder político",
+          "Un instrumento esencial de la república",
+          "Una función accesoria",
+          "Únicamente doctrinario"
+        ],
+        correctIndex: 1
+      }
+    ];
+
+    // =======================
+    // SETUP CANVAS Y ESTADO
+    // =======================
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const hud = document.getElementById("hud");
+    const scoreLabel = document.getElementById("scoreLabel");
+    const difficultyLabel = document.getElementById("difficultyLabel");
+
+    const menu = document.getElementById("menu");
+    const menuButtons = menu.querySelectorAll("button[data-diff]");
+
+    const questionBox = document.getElementById("questionBox");
+    const questionText = document.getElementById("questionText");
+    const optionButtons = document.querySelectorAll(".optionBtn");
+
+    const gameOverBox = document.getElementById("gameOverBox");
+    const gameOverText = document.getElementById("gameOverText");
+    const restartBtn = document.getElementById("restartBtn");
+
+    let gameState = "menu"; // "menu" | "playing" | "question" | "gameover"
+    let currentDifficultyKey = null;
+    let frameCount = 0;
+    let obstacles = [];
+    let score = 0;
+
+    // Para controlar preguntas que no se repiten
+    let usedQuestionIndices = new Set();
+    let currentQuestionIndex = null;
+
+    // Física del pajarito
+    const gravity = 0.35;
+    const jumpStrength = -6.8;
+
+    const bird = {
+      x: 80,
+      y: canvas.height / 2,
+      vy: 0,
+      width: 34,
+      height: 26
+    };
+
+    // Niveles de dificultad
+    const difficultyConfig = {
+      facil: {
+        label: "Fácil",
+        speed: 2.2,
+        gapHeight: 150,
+        spawnInterval: 140
+      },
+      medio: {
+        label: "Medio",
+        speed: 3.1,
+        gapHeight: 125,
+        spawnInterval: 120
+      },
+      dificil: {
+        label: "Difícil",
+        speed: 3.9,
+        gapHeight: 105,
+        spawnInterval: 105
+      }
+    };
+    let currentDifficulty = null;
+
+    // =======================
+    // FUNCIONES PRINCIPALES
+    // =======================
+
+    function resetGameState() {
+      frameCount = 0;
+      obstacles = [];
+      score = 0;
+      usedQuestionIndices.clear();
+      currentQuestionIndex = null;
+
+      bird.x = 80;
+      bird.y = canvas.height / 2;
+      bird.vy = 0;
+
+      scoreLabel.textContent = "Puntos: 0";
+    }
+
+    function startGame(difficultyKey) {
+      currentDifficultyKey = difficultyKey;
+      currentDifficulty = difficultyConfig[difficultyKey];
+
+      difficultyLabel.textContent = "Dificultad: " + currentDifficulty.label;
+
+      resetGameState();
+      hud.classList.remove("hidden");
+      menu.classList.add("hidden");
+      gameOverBox.classList.add("hidden");
+      questionBox.classList.add("hidden");
+
+      gameState = "playing";
+      loop();
+    }
+
+    function endGame(message) {
+      gameState = "gameover";
+      gameOverText.textContent = message || "Perdiste. 😅";
+      gameOverBox.classList.remove("hidden");
+    }
+
+    function askQuestion() {
+      const available = [];
+      for (let i = 0; i < questionsPool.length; i++) {
+        if (!usedQuestionIndices.has(i)) {
+          available.push(i);
+        }
+      }
+
+      if (available.length === 0) {
+        endGame("¡Contestaste todas las preguntas disponibles! 🎉");
+        return;
+      }
+
+      const randomIndex = available[Math.floor(Math.random() * available.length)];
+      currentQuestionIndex = randomIndex;
+      usedQuestionIndices.add(randomIndex);
+
+      const q = questionsPool[randomIndex];
+
+      questionText.textContent = q.text;
+
+      optionButtons.forEach((btn, idx) => {
+        if (idx < q.options.length) {
+          btn.textContent = q.options[idx];
+          btn.classList.remove("hidden");
+        } else {
+          btn.classList.add("hidden");
+        }
+      });
+
+      questionBox.classList.remove("hidden");
+      gameState = "question";
+    }
+
+    function handleAnswer(selectedIndex) {
+      const q = questionsPool[currentQuestionIndex];
+      if (!q) return;
+
+      if (selectedIndex === q.correctIndex) {
+        questionBox.classList.add("hidden");
+        bird.vy = jumpStrength;
+        gameState = "playing";
+      } else {
+        questionBox.classList.add("hidden");
+        endGame("Respuesta incorrecta. El pajarito se cansó. 🐦💥");
+      }
+    }
+
+    function flap() {
+      if (gameState === "playing") {
+        bird.vy = jumpStrength;
+      }
+    }
+
+    // =======================
+    // LÓGICA DE OBSTÁCULOS
+    // =======================
+    function spawnObstacle() {
+      const gapHeight = currentDifficulty.gapHeight;
+      const minMargin = 40;
+      const centerY =
+        minMargin +
+        gapHeight / 2 +
+        Math.random() * (canvas.height - 2 * minMargin - gapHeight);
+
+      obstacles.push({
+        x: canvas.width + 10,
+        width: 50,
+        gapY: centerY,
+        gapHeight: gapHeight,
+        passed: false
+      });
+    }
+
+    function updateObstacles() {
+      const speed = currentDifficulty.speed;
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        const o = obstacles[i];
+        o.x -= speed;
+
+        if (!o.passed && o.x + o.width < bird.x) {
+          o.passed = true;
+          score++;
+          scoreLabel.textContent = "Puntos: " + score;
+        }
+
+        if (o.x + o.width < -50) {
+          obstacles.splice(i, 1);
+        }
+      }
+
+      if (frameCount % currentDifficulty.spawnInterval === 0) {
+        spawnObstacle();
+      }
+    }
+
+    function checkCollisions() {
+      if (bird.y < 0 || bird.y + bird.height > canvas.height) {
+        askQuestion();
+        return;
+      }
+
+      for (const o of obstacles) {
+        const topHeight = o.gapY - o.gapHeight / 2;
+        const bottomY = o.gapY + o.gapHeight / 2;
+
+        const birdLeft = bird.x;
+        const birdRight = bird.x + bird.width;
+        const birdTop = bird.y;
+        const birdBottom = bird.y + bird.height;
+
+        const pipeLeft = o.x;
+        const pipeRight = o.x + o.width;
+
+        const overlapsX = birdRight > pipeLeft && birdLeft < pipeRight;
+        const hitsTop = birdTop < topHeight;
+        const hitsBottom = birdBottom > bottomY;
+
+        if (overlapsX && (hitsTop || hitsBottom)) {
+          askQuestion();
+          return;
+        }
+      }
+    }
+
+    // =======================
+    // DIBUJO
+    // =======================
+    function drawBackground() {
+      ctx.fillStyle = "#63c368";
+      ctx.fillRect(0, canvas.height - 28, canvas.width, 28);
+    }
+
+    function drawBird() {
+      const { x, y, width, height } = bird;
+
+      // Sombra
+      ctx.save();
+      ctx.translate(3, 3);
+      ctx.fillStyle = "rgba(0,0,0,0.2)";
+      ctx.beginPath();
+      ctx.ellipse(
+        x + width / 2,
+        y + height / 2,
+        width / 2,
+        height / 2,
+        0,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+      ctx.restore();
+
+      // Cuerpo colorado
+      ctx.fillStyle = "#ff3b3b";
+      ctx.beginPath();
+      ctx.ellipse(
+        x + width / 2,
+        y + height / 2,
+        width / 2,
+        height / 2,
+        0,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+
+      // Pico amarillo
+      ctx.fillStyle = "#ffd52e";
+      ctx.beginPath();
+      ctx.moveTo(x + width, y + height / 2);
+      ctx.lineTo(x + width + 8, y + height / 2 - 4);
+      ctx.lineTo(x + width + 8, y + height / 2 + 4);
+      ctx.closePath();
+      ctx.fill();
+
+      // Cola verde
+      ctx.fillStyle = "#10b981";
+      ctx.beginPath();
+      ctx.moveTo(x, y + height / 2);
+      ctx.lineTo(x - 10, y + height / 2 - 6);
+      ctx.lineTo(x - 10, y + height / 2 + 6);
+      ctx.closePath();
+      ctx.fill();
+
+      // Ojo
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(x + width * 0.55, y + height * 0.35, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#000000";
+      ctx.beginPath();
+      ctx.arc(x + width * 0.57, y + height * 0.35, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawObstacles() {
+      ctx.fillStyle = "#0f766e";
+      for (const o of obstacles) {
+        const topHeight = o.gapY - o.gapHeight / 2;
+        const bottomY = o.gapY + o.gapHeight / 2;
+
+        ctx.fillRect(o.x, 0, o.width, topHeight);
+        ctx.fillRect(o.x, bottomY, o.width, canvas.height - bottomY);
+
+        ctx.fillStyle = "rgba(0,0,0,0.25)";
+        ctx.fillRect(o.x, 0, 3, topHeight);
+        ctx.fillRect(o.x, bottomY, 3, canvas.height - bottomY);
+        ctx.fillStyle = "#0f766e";
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBackground();
+      drawObstacles();
+      drawBird();
+    }
+
+    // =======================
+    // GAME LOOP
+    // =======================
+    function loop() {
+      if (gameState === "playing") {
+        frameCount++;
+
+        bird.vy += gravity;
+        bird.y += bird.vy;
+
+        updateObstacles();
+        checkCollisions();
+      }
+
+      draw();
+
+      if (gameState !== "menu" && gameState !== "gameover") {
+        requestAnimationFrame(loop);
+      }
+    }
+
+    // =======================
+    // EVENTOS
+    // =======================
+    menuButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const diff = btn.getAttribute("data-diff");
+        startGame(diff);
+      });
+    });
+
+    optionButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.getAttribute("data-index"));
+        if (gameState === "question") {
+          handleAnswer(idx);
+        }
+      });
+    });
+
+    restartBtn.addEventListener("click", () => {
+      gameState = "menu";
+      menu.classList.remove("hidden");
+      hud.classList.add("hidden");
+      gameOverBox.classList.add("hidden");
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        flap();
+      }
+    });
+
+    canvas.addEventListener("mousedown", flap);
+    canvas.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      flap();
+    }, { passive: false });
+
+    // Dibujo inicial (estado menú)
+    draw();
+  </script>
+</body>
+</html>
