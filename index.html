@@ -320,7 +320,7 @@
         correctIndex: 2
       },
       {
-        // SOLO A y C, correcta A
+        // SOLO A y otra opción, correcta la primera
         text: "Según la CSJN en Carranza Latrubesse, las recomendaciones de la Comisión IDH son:",
         options: [
           "No vinculantes",
@@ -707,7 +707,7 @@
     let obstacles = [];
     let score = 0;
 
-    // Para controlar preguntas que no se repiten
+    // Preguntas usadas
     let usedQuestionIndices = new Set();
     let currentQuestionIndex = null;
 
@@ -773,6 +773,8 @@
       resetGameState();
       hud.classList.remove("hidden");
       menu.classList.add("hidden");
+
+      // aseguramos que no haya overlays visibles
       gameOverBox.classList.add("hidden");
       questionBox.classList.add("hidden");
 
@@ -782,6 +784,7 @@
 
     function endGame(message) {
       gameState = "gameover";
+      questionBox.classList.add("hidden");
       gameOverText.textContent = message || "Perdiste. 😅";
       gameOverBox.classList.remove("hidden");
     }
@@ -816,6 +819,8 @@
         }
       });
 
+      // mostrar solo la caja de pregunta
+      gameOverBox.classList.add("hidden");
       questionBox.classList.remove("hidden");
       gameState = "question";
     }
@@ -825,11 +830,12 @@
       if (!q) return;
 
       if (selectedIndex === q.correctIndex) {
+        // correcta: seguimos
         questionBox.classList.add("hidden");
         bird.vy = jumpStrength;
         gameState = "playing";
+        loop(); // por si el loop se frenó en estado question
       } else {
-        questionBox.classList.add("hidden");
         endGame("Respuesta incorrecta. El pajarito se cansó. 🐦💥");
       }
     }
@@ -841,7 +847,7 @@
     }
 
     // =======================
-    // LÓGICA DE OBSTÁCULOS
+    // OBSTÁCULOS
     // =======================
     function spawnObstacle() {
       const gapHeight = currentDifficulty.gapHeight;
@@ -922,7 +928,7 @@
     function drawBird() {
       const { x, y, width, height } = bird;
 
-      // Sombra
+      // sombra
       ctx.save();
       ctx.translate(3, 3);
       ctx.fillStyle = "rgba(0,0,0,0.2)";
@@ -939,7 +945,7 @@
       ctx.fill();
       ctx.restore();
 
-      // Cuerpo colorado
+      // cuerpo colorado
       ctx.fillStyle = "#ff3b3b";
       ctx.beginPath();
       ctx.ellipse(
@@ -953,7 +959,7 @@
       );
       ctx.fill();
 
-      // Pico amarillo
+      // pico amarillo
       ctx.fillStyle = "#ffd52e";
       ctx.beginPath();
       ctx.moveTo(x + width, y + height / 2);
@@ -962,7 +968,7 @@
       ctx.closePath();
       ctx.fill();
 
-      // Cola verde
+      // cola verde
       ctx.fillStyle = "#10b981";
       ctx.beginPath();
       ctx.moveTo(x, y + height / 2);
@@ -971,7 +977,7 @@
       ctx.closePath();
       ctx.fill();
 
-      // Ojo
+      // ojo
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
       ctx.arc(x + width * 0.55, y + height * 0.35, 4, 0, Math.PI * 2);
@@ -1017,13 +1023,14 @@
 
         updateObstacles();
         checkCollisions();
-      }
 
-      draw();
-
-      if (gameState !== "menu" && gameState !== "gameover") {
+        draw();
         requestAnimationFrame(loop);
+      } else if (gameState === "question") {
+        // Solo dibujamos la escena congelada
+        draw();
       }
+      // en "menu" y "gameover" no seguimos el loop automático
     }
 
     // =======================
@@ -1046,30 +1053,17 @@
     });
 
     restartBtn.addEventListener("click", () => {
-  // Volver al menú real
-  gameState = "menu";
-  resetGameState();
+      // Volver al menú limpio
+      gameState = "menu";
+      resetGameState();
 
-  // Mostrar solo el menú
-  menu.classList.remove("hidden");
-  hud.classList.add("hidden");
+      menu.classList.remove("hidden");
+      hud.classList.add("hidden");
+      gameOverBox.classList.add("hidden");
+      questionBox.classList.add("hidden");
 
-  // Ocultar ambas cajas superpuestas
-  gameOverBox.classList.add("hidden");
-  questionBox.classList.add("hidden");   // 🔥 ESTA LÍNEA ES LA CLAVE
-
-  // Reset visual del canvas
-  draw();
-});
-
-
-  // Mostrar solo el menú, ocultar todo lo demás
-  menu.classList.remove("hidden");
-  hud.classList.add("hidden");
-  gameOverBox.classList.add("hidden");
-  questionBox.classList.add("hidden"); // 👈 importante: ocultar también la caja de preguntas
-});
-
+      draw(); // redibuja solo el fondo y el pájaro quieto
+    });
 
     window.addEventListener("keydown", (e) => {
       if (e.code === "Space") {
