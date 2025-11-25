@@ -77,7 +77,7 @@
       top: 6px;
       left: 8px;
       right: 8px;
-      display: flex;
+      display: none; /* oculto al inicio */
       justify-content: space-between;
       font-weight: 600;
       text-shadow: 0 1px 3px rgba(0,0,0,0.7);
@@ -87,14 +87,13 @@
     #gameOverBox {
       position: absolute;
       inset: 0;
-      display: flex;
+      display: none; /* ocultos al inicio */
       align-items: center;
       justify-content: center;
-      pointer-events: none;
+      pointer-events: auto;
     }
 
     .overlayCard {
-      pointer-events: auto;
       background: rgba(15, 15, 35, 0.92);
       border-radius: 14px;
       padding: 16px;
@@ -122,10 +121,6 @@
       margin-top: 6px;
     }
 
-    .hidden {
-      display: none;
-    }
-
     .small {
       font-size: 11px;
       opacity: 0.9;
@@ -137,13 +132,13 @@
   <div id="gameWrapper">
     <canvas id="gameCanvas" width="480" height="320"></canvas>
 
-    <div id="hud" class="hidden">
+    <div id="hud">
       <span id="scoreLabel">Puntos: 0</span>
       <span id="difficultyLabel">Dificultad: -</span>
     </div>
 
     <!-- Caja de preguntas -->
-    <div id="questionBox" class="hidden">
+    <div id="questionBox">
       <div class="overlayCard">
         <h2>¡Ups! El pajarito chocó</h2>
         <p id="questionText"></p>
@@ -158,7 +153,7 @@
     </div>
 
     <!-- Caja de Game Over -->
-    <div id="gameOverBox" class="hidden">
+    <div id="gameOverBox">
       <div class="overlayCard">
         <h2>Fin del juego</h2>
         <p id="gameOverText"></p>
@@ -320,7 +315,6 @@
         correctIndex: 2
       },
       {
-        // SOLO A y otra opción, correcta la primera
         text: "Según la CSJN en Carranza Latrubesse, las recomendaciones de la Comisión IDH son:",
         options: [
           "No vinculantes",
@@ -707,11 +701,9 @@
     let obstacles = [];
     let score = 0;
 
-    // Preguntas usadas
     let usedQuestionIndices = new Set();
     let currentQuestionIndex = null;
 
-    // Física del pajarito
     const gravity = 0.35;
     const jumpStrength = -6.8;
 
@@ -723,7 +715,6 @@
       height: 26
     };
 
-    // Niveles de dificultad
     const difficultyConfig = {
       facil: {
         label: "Fácil",
@@ -747,7 +738,7 @@
     let currentDifficulty = null;
 
     // =======================
-    // FUNCIONES PRINCIPALES
+    // FUNCIONES
     // =======================
 
     function resetGameState() {
@@ -762,21 +753,21 @@
       bird.vy = 0;
 
       scoreLabel.textContent = "Puntos: 0";
+      difficultyLabel.textContent = "Dificultad: -";
     }
 
     function startGame(difficultyKey) {
       currentDifficultyKey = difficultyKey;
       currentDifficulty = difficultyConfig[difficultyKey];
-
       difficultyLabel.textContent = "Dificultad: " + currentDifficulty.label;
 
       resetGameState();
-      hud.classList.remove("hidden");
-      menu.classList.add("hidden");
 
-      // aseguramos que no haya overlays visibles
-      gameOverBox.classList.add("hidden");
-      questionBox.classList.add("hidden");
+      // Mostrar HUD y ocultar menú
+      hud.style.display = "flex";
+      menu.style.display = "flex"; // se verá pero afuera del canvas
+      gameOverBox.style.display = "none";
+      questionBox.style.display = "none";
 
       gameState = "playing";
       loop();
@@ -784,9 +775,9 @@
 
     function endGame(message) {
       gameState = "gameover";
-      questionBox.classList.add("hidden");
+      questionBox.style.display = "none";
       gameOverText.textContent = message || "Perdiste. 😅";
-      gameOverBox.classList.remove("hidden");
+      gameOverBox.style.display = "flex";
     }
 
     function askQuestion() {
@@ -813,15 +804,14 @@
       optionButtons.forEach((btn, idx) => {
         if (idx < q.options.length) {
           btn.textContent = q.options[idx];
-          btn.classList.remove("hidden");
+          btn.style.display = "block";
         } else {
-          btn.classList.add("hidden");
+          btn.style.display = "none";
         }
       });
 
-      // mostrar solo la caja de pregunta
-      gameOverBox.classList.add("hidden");
-      questionBox.classList.remove("hidden");
+      gameOverBox.style.display = "none";
+      questionBox.style.display = "flex";
       gameState = "question";
     }
 
@@ -830,11 +820,10 @@
       if (!q) return;
 
       if (selectedIndex === q.correctIndex) {
-        // correcta: seguimos
-        questionBox.classList.add("hidden");
+        questionBox.style.display = "none";
         bird.vy = jumpStrength;
         gameState = "playing";
-        loop(); // por si el loop se frenó en estado question
+        loop();
       } else {
         endGame("Respuesta incorrecta. El pajarito se cansó. 🐦💥");
       }
@@ -846,9 +835,6 @@
       }
     }
 
-    // =======================
-    // OBSTÁCULOS
-    // =======================
     function spawnObstacle() {
       const gapHeight = currentDifficulty.gapHeight;
       const minMargin = 40;
@@ -917,9 +903,6 @@
       }
     }
 
-    // =======================
-    // DIBUJO
-    // =======================
     function drawBackground() {
       ctx.fillStyle = "#63c368";
       ctx.fillRect(0, canvas.height - 28, canvas.width, 28);
@@ -928,7 +911,6 @@
     function drawBird() {
       const { x, y, width, height } = bird;
 
-      // sombra
       ctx.save();
       ctx.translate(3, 3);
       ctx.fillStyle = "rgba(0,0,0,0.2)";
@@ -945,7 +927,6 @@
       ctx.fill();
       ctx.restore();
 
-      // cuerpo colorado
       ctx.fillStyle = "#ff3b3b";
       ctx.beginPath();
       ctx.ellipse(
@@ -959,7 +940,6 @@
       );
       ctx.fill();
 
-      // pico amarillo
       ctx.fillStyle = "#ffd52e";
       ctx.beginPath();
       ctx.moveTo(x + width, y + height / 2);
@@ -968,7 +948,6 @@
       ctx.closePath();
       ctx.fill();
 
-      // cola verde
       ctx.fillStyle = "#10b981";
       ctx.beginPath();
       ctx.moveTo(x, y + height / 2);
@@ -977,7 +956,6 @@
       ctx.closePath();
       ctx.fill();
 
-      // ojo
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
       ctx.arc(x + width * 0.55, y + height * 0.35, 4, 0, Math.PI * 2);
@@ -1011,26 +989,21 @@
       drawBird();
     }
 
-    // =======================
-    // GAME LOOP
-    // =======================
     function loop() {
-      if (gameState === "playing") {
-        frameCount++;
-
-        bird.vy += gravity;
-        bird.y += bird.vy;
-
-        updateObstacles();
-        checkCollisions();
-
+      if (gameState !== "playing") {
         draw();
-        requestAnimationFrame(loop);
-      } else if (gameState === "question") {
-        // Solo dibujamos la escena congelada
-        draw();
+        return;
       }
-      // en "menu" y "gameover" no seguimos el loop automático
+
+      frameCount++;
+      bird.vy += gravity;
+      bird.y += bird.vy;
+
+      updateObstacles();
+      checkCollisions();
+      draw();
+
+      requestAnimationFrame(loop);
     }
 
     // =======================
@@ -1057,12 +1030,13 @@
       gameState = "menu";
       resetGameState();
 
-      menu.classList.remove("hidden");
-      hud.classList.add("hidden");
-      gameOverBox.classList.add("hidden");
-      questionBox.classList.add("hidden");
+      questionBox.style.display = "none";
+      gameOverBox.style.display = "none";
 
-      draw(); // redibuja solo el fondo y el pájaro quieto
+      hud.style.display = "none";
+      menu.style.display = "flex";
+
+      draw();
     });
 
     window.addEventListener("keydown", (e) => {
@@ -1078,7 +1052,7 @@
       flap();
     }, { passive: false });
 
-    // Dibujo inicial (estado menú)
+    // Dibujo inicial
     draw();
   </script>
 </body>
