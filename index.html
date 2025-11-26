@@ -133,167 +133,134 @@
 </div>
 
 <script>
-
 //////////////////////////////
-// PREGUNTAS – TODAS CARGADAS
+// PREGUNTAS
 //////////////////////////////
-
 const questionsPool = [
   { text:"El Bloque Constitucional Federal está compuesto por:", options:[
     "Códigos de fondo y tratados sin jerarquía",
     "Constitución Nacional + Tratados de DDHH con jerarquía constitucional",
     "Leyes nacionales",
     "Sentencias de la Corte IDH"], correctIndex:1 },
-
   { text:"La jerarquía normativa puede graficarse como:", options:[
     "Un triángulo","Una pirámide","Un trapecio","Un rectángulo"], correctIndex:2 },
-
   { text:"¿Qué característica distingue al Bloque Constitucional Federal?", options:[
     "Regula solo cuestiones civiles","Es la fuente jurídica más baja",
     "Goza de supremacía frente a normas inferiores","Solo se aplica a casos penales"], correctIndex:2 },
-
   { text:"Los tratados internacionales con jerarquía constitucional fueron incorporados principalmente en:",
     options:["Reforma de 1957","Reforma de 1994","Reforma de 1860","Reforma de 2001"], correctIndex:1 },
-
   { text:"Las normas ubicadas en el nivel superior del sistema son generalmente:",
     options:["Detalladas","Breves y genéricas","Solo para el ejecutivo","Municipales"], correctIndex:1 },
-
   { text:"El control de constitucionalidad argentino es:",
     options:["Concentrado","Difuso","Legislativo","Realizado por la Comisión IDH"], correctIndex:1 },
-
   { text:"¿Quiénes pueden ejercer control de constitucionalidad?",
     options:["Solo la Corte Suprema","Solo jueces federales","Todos los jueces","Los legisladores"], correctIndex:2 },
-
   { text:"La función de no aplicar normas contrarias al Bloque Constitucional Federal es:",
     options:["Función legislativa","Función positiva","Función negativa o represiva","Función administrativa"], correctIndex:2 },
-
   { text:"El control de constitucionalidad tiene efectos:",
     options:["Erga omnes","Inter partes","Territoriales","Sobre todas las leyes"], correctIndex:1 },
-
   { text:"El caso Halabi constituye una excepción porque:",
     options:["No fue decidido por la Corte","Tuvo efecto colectivo","Invalidó tratados","Eliminó control"], correctIndex:1 },
-
   { text:"La Corte IDH señaló en Almonacid Arellano que:",
     options:["Los jueces pueden ignorar SIDH","Aplicar normas contrarias",
     "Una norma local contraria a la CADH es inconvencional","El DI no sirve"], correctIndex:2 },
-
   { text:"El control de convencionalidad puede ser:",
     options:["Solo a petición","Solo de oficio","A petición o de oficio","Al final del proceso"], correctIndex:2 },
-
   { text:"¿Qué norma de Tucumán regula el control constitucional?",
     options:["Const. Tucumán art 10","CPC art 87","Ley 24.660","Ley 6315"], correctIndex:1 },
-
   { text:"Una diferencia entre Corte IDH y Comisión IDH es que:",
     options:["Ambas litigiosas","La Comisión resuelve","La Corte dicta sentencias obligatorias","La Corte recomienda"], correctIndex:2 },
-
   { text:"Según CSJN en Carranza Latrubesse, las recomendaciones de la Comisión IDH son:",
     options:["No vinculantes","Vinculantes"], correctIndex:0 },
-
   { text:"¿Qué derecho reclamaba S.R.L.?",
     options:["Salidas","Trabajo","Estudiar carrera universitaria","Reducción"], correctIndex:2 },
-
   { text:"¿Qué tipo de acción presentó S.R.L.?",
     options:["Amparo","Casación","Habeas corpus correctivo","Queja"], correctIndex:2 },
-
   { text:"El único derecho del que está privada una persona condenada es:",
     options:["Educación","Salud","Libertad ambulatoria","Participación política"], correctIndex:2 },
-
   { text:"El paradigma adecuado para interpretar el caso:",
     options:["Seguridad","Orden público","Derechos Humanos","Prevención"], correctIndex:2 },
-
   { text:"La CSJT determinó que pedir informes al SP:",
     options:["Siempre necesario","Prohibido","No previsto y generaba demoras inconstitucionales","Irrelevante"], correctIndex:2 },
-
   { text:"La Ley 26.206 establece que la educación en encierro:",
     options:["Puede limitarse","Requiere autorización","No admite limitación por encierro","Depende del director"], correctIndex:2 },
-
   { text:"El fundamento del derecho a estudiar según CSJT:",
     options:["Fines de la pena","Reinserción","Condición humana","Presupuesto"], correctIndex:2 },
-
   { text:"La CSJT ordenó al juez de ejecución:",
     options:["Negar permisos","Nueva condena","Garantizar cursado y exámenes","Más informes"], correctIndex:2 },
-
   { text:"Principal obstáculo al derecho:",
     options:["Transporte","Demora por informes penitenciarios","Cupo","Conducta"], correctIndex:1 },
-
   { text:"Educación en personas privadas de libertad está protegida por:",
     options:["Reglamentos","Constitución y tratados","Decretos","Informes"], correctIndex:1 },
-
   { text:"La jueza respecto del art. 562 CCyC declaró:",
     options:["Constitucionalidad","Inconstitucionalidad e inconvencionalidad parcial","Inaplicabilidad","Derogación"], correctIndex:1 },
-
   { text:"Los peticionantes usaban GS porque:",
     options:["Laboral","Patologías que hacían inviable el embarazo","Prohibición","Más barata"], correctIndex:1 },
-
   { text:"La jueza fundamentó en:",
     options:["Adm","Penal","Familia + salud reproductiva","Comercial"], correctIndex:2 },
-
   { text:"La filiación se determinó por:",
     options:["Gestante","Voluntad procreacional + genética","Registro civil","Plazos"], correctIndex:1 },
-
   { text:"La jueza destacó:",
     options:["Neutralidad","Interés superior del niño","Reserva de ley","Orden público"], correctIndex:1 },
-
   { text:"La GS no fue regulada porque:",
     options:["No existía","Requería debate interdisciplinario profundo","Era ilegal","No había casos"], correctIndex:1 },
-
   { text:"La sentencia ordenó que el niño/a sea:",
     options:["Hijo de gestante","Sin filiación","Inscripto con apellidos genéticos","Adoptabilidad"], correctIndex:2 },
-
   { text:"La inconstitucionalidad fue:",
     options:["Total","Parcial","Errónea","Retroactiva"], correctIndex:1 },
-
   { text:"Leading case estadounidense:",
     options:["Plessy","Brown","Marbury","Miranda"], correctIndex:2 },
-
   { text:"Primer antecedente argentino:",
     options:["Halabi","Sojo","Carranza","Acosta"], correctIndex:1 },
-
   { text:"El caso Sojo versaba sobre:",
     options:["Culto","Expresión + prisión por Diputados","Educación","Propiedad"], correctIndex:1 },
-
   { text:"Opiniones consultivas de Corte IDH son:",
     options:["Obligatorias","Sin valor","Interpretaciones autorizadas","Disciplinarias"], correctIndex:2 },
-
   { text:"Sentencias de Corte IDH que no involucran a Argentina:",
     options:["Obligatorias","Doctrina","No citables","Modifican leyes"], correctIndex:1 },
-
   { text:"La Comisión IDH emite:",
     options:["Sentencias","Opiniones y recomendaciones","Órdenes","Decretos"], correctIndex:1 },
-
   { text:"El control de constitucionalidad evita que:",
-    options:["Judicial legisle","Se apliquen normas contrarias al bloque","Analicen tratados","Congreso regule"], correctIndex:1 },
-
+    options:["El poder judicial legisle","Se apliquen normas contrarias al bloque","Analicen tratados","Congreso regule"], correctIndex:1 },
   { text:"Paradigma de seguridad en S.R.L.:",
     options:["Reconocía derecho","Supeditaba a informes y conducta","Eliminaba educación","Acceso inmediato"], correctIndex:1 },
-
   { text:"El trapecio representa:",
     options:["Niveles judiciales","Jerarquía normativa","Tipos de tratados","Proceso legislativo"], correctIndex:1 },
-
   { text:"S.R.L. es ejemplo de:",
     options:["Control correcto","Desconocimiento SIDH","Prohibición de estudiar","Fallo disciplinario"], correctIndex:0 },
-
   { text:"Control judicial es mecanismo:",
     options:["Adm","Legislativo","Interpoderes e intrapoder","Ejecutivo"], correctIndex:2 },
-
   { text:"La jueza GS sostuvo que el Estado debe:",
     options:["Interferir","Obstaculizar","No interferir y permitir salud reproductiva","Limitar ciencia"], correctIndex:2 },
-
   { text:"El DI de DDHH integra el bloque porque:",
     options:["Opcional","Ratificado libremente","Sin jerarquía","Inferior"], correctIndex:1 },
-
   { text:"La condición humana implica:",
     options:["Limitación","Autorización para estudiar","Derecho a educación","Pérdida de derechos"], correctIndex:2 },
-
   { text:"La educación en cárceles debe ser:",
     options:["Restringida","Opcional","Sin discriminación","Decidida por director"], correctIndex:2 },
-
   { text:"La jueza GS usó tratados como:",
     options:["Convención del Niño + CEDAW","Viena","Varsovia","Antártico"], correctIndex:0 },
-
   { text:"El texto concluye que el control de constitucionalidad es:",
     options:["Poder político","Instrumento esencial de la república","Accesorio","Doctrinario"], correctIndex:1 }
 ];
+
+//////////////////////////////
+// AUDIO
+//////////////////////////////
+
+// Estos archivos tienen que estar en el repo junto a index.html
+const musicGame = new Audio("sfx_music_ingame_loop.wav");
+musicGame.loop = true;
+musicGame.volume = 0.35;
+
+const sfxFlap  = new Audio("sfx_flap_soft.wav");
+sfxFlap.volume = 0.6;
+
+const sfxScore = new Audio("sfx_score_popup.wav");
+sfxScore.volume = 0.6;
+
+const sfxHit   = new Audio("sfx_damage.wav");
+sfxHit.volume  = 0.6;
 
 //////////////////////////////
 // VARIABLES DEL JUEGO
@@ -334,9 +301,9 @@ const bird = {
 };
 
 const difficultyConfig = {
-  facil: { label:"Fácil", speed:2.2, gapHeight:150, spawnInterval:140 },
-  medio: { label:"Medio", speed:3.1, gapHeight:125, spawnInterval:120 },
-  dificil:{ label:"Difícil", speed:3.9, gapHeight:105, spawnInterval:105 }
+  facil:  { label:"Fácil",  speed:2.2, gapHeight:150, spawnInterval:140 },
+  medio:  { label:"Medio",  speed:3.1, gapHeight:125, spawnInterval:120 },
+  dificil:{ label:"Difícil",speed:3.9, gapHeight:105, spawnInterval:105 }
 };
 
 let currentDifficulty = null;
@@ -365,6 +332,11 @@ function goToMenu() {
   hud.style.display = "none";
   menu.style.display = "flex";
   difficultyLabel.textContent = "Dificultad: -";
+
+  // parar música
+  musicGame.pause();
+  musicGame.currentTime = 0;
+
   draw();
 }
 
@@ -379,6 +351,10 @@ function startGame(diffKey) {
   hud.style.display = "flex";
   menu.style.display = "none";
   questionBox.style.display = "none";
+
+  // arrancar música (esto está dentro de un click, así que el navegador lo permite)
+  musicGame.currentTime = 0;
+  musicGame.play().catch(() => {});
 
   gameState = "playing";
   loop();
@@ -407,6 +383,9 @@ function askQuestion() {
     }
   });
 
+  // sonido de golpe
+  try { sfxHit.currentTime = 0; sfxHit.play(); } catch(e) {}
+
   questionBox.style.display = "flex";
   gameState = "question";
 }
@@ -431,7 +410,13 @@ function handleAnswer(selectedIndex) {
 }
 
 function flap() {
-  if (gameState === "playing") bird.vy = jumpStrength;
+  if (gameState === "playing") {
+    bird.vy = jumpStrength;
+    try {
+      sfxFlap.currentTime = 0;
+      sfxFlap.play();
+    } catch(e) {}
+  }
 }
 
 function spawnObstacle() {
@@ -458,6 +443,11 @@ function updateObstacles() {
       o.passed = true;
       score++;
       scoreLabel.textContent = "Puntos: " + score;
+
+      try {
+        sfxScore.currentTime = 0;
+        sfxScore.play();
+      } catch(e) {}
     }
   });
 
@@ -503,11 +493,13 @@ function drawBackground() {
 function drawBird() {
   const {x,y,width,height} = bird;
 
+  // cuerpo rojo
   ctx.fillStyle = "#ff3b3b";
   ctx.beginPath();
   ctx.ellipse(x+width/2, y+height/2, width/2, height/2, 0,0,Math.PI*2);
   ctx.fill();
 
+  // plumas verde chillón
   ctx.fillStyle = "#00ff55";
   ctx.beginPath();
   ctx.ellipse(x+width*0.25, y+height*0.35, 4,8, -0.5, 0,Math.PI*2);
@@ -516,6 +508,7 @@ function drawBird() {
   ctx.ellipse(x+width*0.25, y+height*0.65, 4,8, 0.5, 0,Math.PI*2);
   ctx.fill();
 
+  // pico amarillo
   ctx.fillStyle = "#ffd52e";
   ctx.beginPath();
   ctx.moveTo(x+width, y+height/2);
@@ -523,6 +516,7 @@ function drawBird() {
   ctx.lineTo(x+width+8, y+height/2+4);
   ctx.fill();
 
+  // cola verde
   ctx.fillStyle = "#10b981";
   ctx.beginPath();
   ctx.moveTo(x, y+height/2);
@@ -530,6 +524,7 @@ function drawBird() {
   ctx.lineTo(x-10, y+height/2+6);
   ctx.fill();
 
+  // ojo
   ctx.fillStyle = "white";
   ctx.beginPath();
   ctx.arc(x+width*0.55, y+height*0.35, 4, 0,Math.PI*2);
@@ -590,14 +585,17 @@ optionButtons.forEach(btn => {
 });
 
 window.addEventListener("keydown", e => {
-  if (e.code === "Space") { e.preventDefault(); flap(); }
+  if (e.code === "Space") {
+    e.preventDefault();
+    flap();
+  }
 });
 
 canvas.addEventListener("mousedown", flap);
 canvas.addEventListener("touchstart", e => { e.preventDefault(); flap(); }, {passive:false});
 
+// Dibujo inicial
 draw();
-
 </script>
 </body>
 </html>
