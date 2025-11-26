@@ -146,7 +146,7 @@
           <button class="optionBtn" data-index="2"></button>
           <button class="optionBtn" data-index="3"></button>
         </div>
-        <p class="small">Si contestás bien, el juego continúa. Si no, termina.</p>
+        <p class="small">Si contestás bien, el juego se reinicia y el pajarito vuelve a volar. Si no, termina.</p>
       </div>
     </div>
   </div>
@@ -726,27 +726,25 @@
     // FUNCIONES
     // =======================
 
-    function resetGameState() {
+    function resetRunKeepQuestions() {
       frameCount = 0;
       obstacles = [];
       score = 0;
-      usedQuestionIndices.clear();
-      currentQuestionIndex = null;
+      scoreLabel.textContent = "Puntos: 0";
 
       bird.x = 80;
       bird.y = canvas.height / 2;
       bird.vy = 0;
-
-      scoreLabel.textContent = "Puntos: 0";
-      difficultyLabel.textContent = "Dificultad: -";
     }
 
     function goToMenu() {
       gameState = "menu";
-      resetGameState();
+      resetRunKeepQuestions();
+      usedQuestionIndices.clear();
       questionBox.style.display = "none";
       hud.style.display = "none";
       menu.style.display = "flex";
+      difficultyLabel.textContent = "Dificultad: -";
       draw();
     }
 
@@ -755,10 +753,11 @@
       currentDifficulty = difficultyConfig[difficultyKey];
       difficultyLabel.textContent = "Dificultad: " + currentDifficulty.label;
 
-      resetGameState();
+      resetRunKeepQuestions();
+      usedQuestionIndices.clear();
 
       hud.style.display = "flex";
-      menu.style.display = "flex"; // se ve abajo igual
+      menu.style.display = "flex";
       questionBox.style.display = "none";
 
       gameState = "playing";
@@ -805,8 +804,10 @@
       if (!q) return;
 
       if (selectedIndex === q.correctIndex) {
+        // Correcto: reiniciar la partida en misma dificultad
         questionBox.style.display = "none";
-        bird.vy = jumpStrength;
+        resetRunKeepQuestions();
+        hud.style.display = "flex";
         gameState = "playing";
         loop();
       } else {
@@ -897,6 +898,7 @@
     function drawBird() {
       const { x, y, width, height } = bird;
 
+      // Sombra
       ctx.save();
       ctx.translate(3, 3);
       ctx.fillStyle = "rgba(0,0,0,0.2)";
@@ -913,6 +915,7 @@
       ctx.fill();
       ctx.restore();
 
+      // Cuerpo colorado
       ctx.fillStyle = "#ff3b3b";
       ctx.beginPath();
       ctx.ellipse(
@@ -926,6 +929,34 @@
       );
       ctx.fill();
 
+      // Plumas laterales verde chillón
+      ctx.fillStyle = "#00ff55";
+      // pluma superior
+      ctx.beginPath();
+      ctx.ellipse(
+        x + width * 0.25,
+        y + height * 0.35,
+        4,
+        8,
+        -0.6,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+      // pluma inferior
+      ctx.beginPath();
+      ctx.ellipse(
+        x + width * 0.25,
+        y + height * 0.65,
+        4,
+        8,
+        0.6,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+
+      // Pico amarillo
       ctx.fillStyle = "#ffd52e";
       ctx.beginPath();
       ctx.moveTo(x + width, y + height / 2);
@@ -934,6 +965,7 @@
       ctx.closePath();
       ctx.fill();
 
+      // Cola verde
       ctx.fillStyle = "#10b981";
       ctx.beginPath();
       ctx.moveTo(x, y + height / 2);
@@ -942,6 +974,7 @@
       ctx.closePath();
       ctx.fill();
 
+      // Ojo
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
       ctx.arc(x + width * 0.55, y + height * 0.35, 4, 0, Math.PI * 2);
