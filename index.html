@@ -48,6 +48,14 @@
       gap: 10px;
     }
 
+    #musicControls {
+      margin-top: 6px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
     button {
       padding: 6px 12px;
       border-radius: 999px;
@@ -56,6 +64,7 @@
       font-weight: bold;
       cursor: pointer;
       box-shadow: 0 3px 8px rgba(0,0,0,0.35);
+      font-size: 13px;
     }
 
     button:hover {
@@ -130,6 +139,11 @@
   <button data-diff="facil">Fácil</button>
   <button data-diff="medio">Medio</button>
   <button data-diff="dificil">Difícil</button>
+</div>
+
+<div id="musicControls">
+  <button id="musicToggleBtn">🎵 Música: ON</button>
+  <button id="testSoundBtn">🔊 Probar sonido</button>
 </div>
 
 <script>
@@ -245,22 +259,73 @@ const questionsPool = [
 ];
 
 //////////////////////////////
-// AUDIO
+// AUDIO + FADES
 //////////////////////////////
 
-// Estos archivos tienen que estar en el repo junto a index.html
-const musicGame = new Audio("sfx_music_ingame_loop.wav");
+const musicGame = new Audio("./sfx_music_ingame_loop.wav");
 musicGame.loop = true;
-musicGame.volume = 0.35;
+let musicStarted = false;
+let musicEnabled = true;
+const musicBaseVolume = 0.5;  // volumen normal
 
-const sfxFlap  = new Audio("sfx_flap_soft.wav");
-sfxFlap.volume = 0.6;
+const sfxFlap  = new Audio("./sfx_flap_soft.wav");
+sfxFlap.volume = 0.8;
 
-const sfxScore = new Audio("sfx_score_popup.wav");
-sfxScore.volume = 0.6;
+const sfxScore = new Audio("./sfx_score_popup.wav");
+sfxScore.volume = 0.8;
 
-const sfxHit   = new Audio("sfx_damage.wav");
-sfxHit.volume  = 0.6;
+const sfxHit   = new Audio("./sfx_damage.wav");
+sfxHit.volume  = 0.8;
+
+let fadeAnimationId = null;
+
+function fadeMusicTo(targetVolume, durationMs = 600, pauseAtEnd = false) {
+  if (!musicStarted) return;
+  if (fadeAnimationId) cancelAnimationFrame(fadeAnimationId);
+
+  const startVolume = musicGame.volume;
+  const delta = targetVolume - startVolume;
+  const startTime = performance.now();
+
+  function step(now) {
+    const t = Math.min(1, (now - startTime) / durationMs);
+    musicGame.volume = startVolume + delta * t;
+
+    if (t < 1) {
+      fadeAnimationId = requestAnimationFrame(step);
+    } else {
+      fadeAnimationId = null;
+      if (pauseAtEnd && targetVolume === 0) {
+        musicGame.pause();
+      }
+    }
+  }
+
+  fadeAnimationId = requestAnimationFrame(step);
+}
+
+// se llama cuando el usuario hace clic (Start, flap, test sonido...)
+function ensureMusicPlaying() {
+  if (!musicEnabled) return;
+
+  if (!musicStarted) {
+    musicStarted = true;
+    musicGame.currentTime = 0;
+    musicGame.volume = 0;
+    musicGame.play().then(() => {
+      fadeMusicTo(musicBaseVolume, 800);
+    }).catch(() => {
+      console.log("El navegador bloqueó la reproducción automática.");
+    });
+  } else if (musicGame.paused) {
+    musicGame.volume = 0;
+    musicGame.play().then(() => {
+      fadeMusicTo(musicBaseVolume, 800);
+    }).catch(() => {});
+  } else {
+    fadeMusicTo(musicBaseVolume, 400);
+  }
+}
 
 //////////////////////////////
 // VARIABLES DEL JUEGO
@@ -279,6 +344,9 @@ const menuButtons = document.querySelectorAll("button[data-diff]");
 const questionBox = document.getElementById("questionBox");
 const questionText = document.getElementById("questionText");
 const optionButtons = document.querySelectorAll(".optionBtn");
+
+const musicToggleBtn = document.getElementById("musicToggleBtn");
+const testSoundBtn   = document.getElementById("testSoundBtn");
 
 let gameState = "menu";
 let currentDifficultyKey = null;
@@ -333,10 +401,7 @@ function goToMenu() {
   menu.style.display = "flex";
   difficultyLabel.textContent = "Dificultad: -";
 
-  // parar música
-  musicGame.pause();
-  musicGame.currentTime = 0;
-
+  // la música NO se apaga sola; queda como esté según el botón ON/OFF
   draw();
 }
 
@@ -352,9 +417,7 @@ function startGame(diffKey) {
   menu.style.display = "none";
   questionBox.style.display = "none";
 
-  // arrancar música (esto está dentro de un click, así que el navegador lo permite)
-  musicGame.currentTime = 0;
-  musicGame.play().catch(() => {});
+  ensureMusicPlaying();
 
   gameState = "playing";
   loop();
@@ -383,7 +446,6 @@ function askQuestion() {
     }
   });
 
-  // sonido de golpe
   try { sfxHit.currentTime = 0; sfxHit.play(); } catch(e) {}
 
   questionBox.style.display = "flex";
@@ -412,6 +474,7 @@ function handleAnswer(selectedIndex) {
 function flap() {
   if (gameState === "playing") {
     bird.vy = jumpStrength;
+    ensureMusicPlaying();
     try {
       sfxFlap.currentTime = 0;
       sfxFlap.play();
@@ -568,7 +631,7 @@ function loop() {
 }
 
 //////////////////////////////
-// EVENTOS
+// EVENTOS: juego
 //////////////////////////////
 
 menuButtons.forEach(btn => {
@@ -594,7 +657,36 @@ window.addEventListener("keydown", e => {
 canvas.addEventListener("mousedown", flap);
 canvas.addEventListener("touchstart", e => { e.preventDefault(); flap(); }, {passive:false});
 
-// Dibujo inicial
+//////////////////////////////
+// EVENTOS: música
+//////////////////////////////
+
+function updateMusicToggleLabel() {
+  musicToggleBtn.textContent = musicEnabled ? "🎵 Música: ON" : "🎵 Música: OFF";
+}
+
+musicToggleBtn.addEventListener("click", () => {
+  musicEnabled = !musicEnabled;
+  updateMusicToggleLabel();
+
+  if (musicEnabled) {
+    ensureMusicPlaying();        // fade in automático
+  } else if (musicStarted) {
+    fadeMusicTo(0, 800, true);   // fade out suave y pausa
+  }
+});
+
+// Botón para probar que el audio carga
+testSoundBtn.addEventListener("click", () => {
+  ensureMusicPlaying();
+  try {
+    sfxScore.currentTime = 0;
+    sfxScore.play();
+  } catch(e) {}
+});
+
+// iniciar dibujo estático
+updateMusicToggleLabel();
 draw();
 </script>
 </body>
