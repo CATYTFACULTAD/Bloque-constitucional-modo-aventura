@@ -449,7 +449,10 @@ function askQuestion() {
   try { sfxHit.currentTime = 0; sfxHit.play(); } catch(e) {}
 
   questionBox.style.display = "flex";
-  gameState = "question";
+gameState = "question";
+
+fadeMusicTo(0.05, 500);   // 🟢 bajar música mientras se contesta
+
 }
 
 function handleAnswer(selectedIndex) {
