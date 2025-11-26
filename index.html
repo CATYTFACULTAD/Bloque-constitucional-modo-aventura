@@ -25,9 +25,12 @@
     }
 
     #gameCanvas {
-      background: linear-gradient(#7be0ff, #e0f8ff);
-      border-radius: 14px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        background: linear-gradient(#7be0ff, #e0f8ff);
+        border-radius: 14px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        /* 👇 fuerza que se vea grande en pantalla */
+        width: min(960px, 95vw);
+        height: auto;
     }
 
     #hud {
@@ -109,7 +112,7 @@
 <h1>El Bloque Constitucional: Modo Aventura 🐦⚖️</h1>
 
 <div id="gameWrapper">
-  <canvas id="gameCanvas" width="1440" height="960"></canvas>
+ <canvas id="gameCanvas" width="960" height="540"></canvas>
 
   <div id="hud">
     <span id="scoreLabel">Puntos: 0</span>
@@ -355,12 +358,14 @@ const gravity = 0.35;
 const jumpStrength = -6.8;
 
 const bird = {
-  x: 240,
+  const bird = {
+  x: 120,
   y: canvas.height / 2,
   vy: 0,
-  width: 102,
-  height: 78
+  width: 50,
+  height: 38
 };
+
 
 const difficultyConfig = {
   facil:  { label:"Fácil",  speed:2.2, gapHeight:150, spawnInterval:140 },
