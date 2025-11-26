@@ -159,11 +159,12 @@
   </div>
 
   <script>
-    //////////////////////////////
-    // PREGUNTAS
-    //////////////////////////////
+
+    /******************************************
+     * 1) PREGUNTAS
+     ******************************************/
     const questionsPool = [
-      { text:"El Bloque Constitucional Federal está compuesto por:", options:[
+    { text:"El Bloque Constitucional Federal está compuesto por:", options:[
         "Códigos de fondo y tratados sin jerarquía",
         "Constitución Nacional + Tratados de DDHH con jerarquía constitucional",
         "Leyes nacionales","Sentencias de la Corte IDH"], correctIndex:1 },
@@ -267,77 +268,53 @@
     
     ];
 
-    //////////////////////////////
-    // AUDIO + FADES
-    //////////////////////////////
 
-    // ⚠️ Si tu archivo es MP3, cambiá a "./flappy_flying_deep.mp3"
+    /******************************************
+     * 2) AUDIO (música SOLO en MENÚ)
+     ******************************************/
     const musicGame = new Audio("./flappy_flying_deep.wav");
     musicGame.loop = true;
     let musicStarted = false;
     let musicEnabled = true;
-    const musicBaseVolume = 0.10; // bajita en el menú
+    const musicBaseVolume = 0.10;
 
-    const sfxFlap = new Audio("./sfx_flap_soft.wav");
-    sfxFlap.volume = 0.8;
-
+    const sfxFlap  = new Audio("./sfx_flap_soft.wav");
     const sfxScore = new Audio("./sfx_score_popup.wav");
-    sfxScore.volume = 0.8;
+    const sfxHit   = new Audio("./sfx_damage.wav");
 
-    const sfxHit = new Audio("./sfx_damage.wav");
-    sfxHit.volume = 0.8;
-
-    let fadeAnimationId = null;
-
-    function fadeMusicTo(targetVolume, durationMs = 600, pauseAtEnd = false) {
+    function fadeMusicTo(vol, time = 600, stop = false) {
       if (!musicStarted) return;
-      if (fadeAnimationId) cancelAnimationFrame(fadeAnimationId);
+      let start = musicGame.volume;
+      let delta = vol - start;
+      let t0 = performance.now();
 
-      const startVolume = musicGame.volume;
-      const delta = targetVolume - startVolume;
-      const startTime = performance.now();
-
-      function step(now) {
-        const t = Math.min(1, (now - startTime) / durationMs);
-        musicGame.volume = startVolume + delta * t;
-
-        if (t < 1) {
-          fadeAnimationId = requestAnimationFrame(step);
-        } else {
-          fadeAnimationId = null;
-          if (pauseAtEnd && targetVolume === 0) musicGame.pause();
-        }
+      function anim(t) {
+        let p = Math.min(1, (t - t0) / time);
+        musicGame.volume = start + delta * p;
+        if (p < 1) requestAnimationFrame(anim);
+        else if (stop && vol === 0) musicGame.pause();
       }
-
-      fadeAnimationId = requestAnimationFrame(step);
+      requestAnimationFrame(anim);
     }
 
-    function ensureMusicPlaying() {
+    function ensureMenuMusic() {
       if (!musicEnabled) return;
-
       if (!musicStarted) {
         musicStarted = true;
         musicGame.currentTime = 0;
         musicGame.volume = 0;
-        musicGame.play().then(() => {
-          fadeMusicTo(musicBaseVolume, 800);
-        }).catch(() => {
-          console.log("Autoplay bloqueado.");
-        });
+        musicGame.play().then(() => fadeMusicTo(musicBaseVolume, 800));
       } else if (musicGame.paused) {
         musicGame.volume = 0;
-        musicGame.play().then(() => {
-          fadeMusicTo(musicBaseVolume, 800);
-        }).catch(() => {});
+        musicGame.play().then(() => fadeMusicTo(musicBaseVolume, 800));
       } else {
         fadeMusicTo(musicBaseVolume, 400);
       }
     }
 
-    //////////////////////////////
-    // VARIABLES DEL JUEGO
-    //////////////////////////////
-
+    /******************************************
+     * 3) VARIABLES DEL JUEGO
+     ******************************************/
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
@@ -353,19 +330,18 @@
     const optionButtons = document.querySelectorAll(".optionBtn");
 
     const musicToggleBtn = document.getElementById("musicToggleBtn");
-    const testSoundBtn = document.getElementById("testSoundBtn");
+    const testSoundBtn   = document.getElementById("testSoundBtn");
 
-    let gameState = "menu"; // menu | playing | question | celebration
+    let gameState = "menu";
     let currentDifficultyKey = null;
+
     let frameCount = 0;
     let obstacles = [];
     let score = 0;
 
-    // niveles automáticos
     let level = 1;
     let isCelebrating = false;
     let celebrationTimer = 0;
-    let celebrationBaseY = 0;
 
     let usedQuestionIndices = new Set();
     let currentQuestionIndex = null;
@@ -382,16 +358,27 @@
     };
 
     const difficultyConfig = {
-      facil: { label: "Fácil", speed: 2.2, gapHeight: 150, spawnInterval: 140 },
-      medio: { label: "Medio", speed: 3.1, gapHeight: 125, spawnInterval: 120 },
-      dificil: { label: "Difícil", speed: 3.9, gapHeight: 105, spawnInterval: 105 }
+      facil:  { label:"Fácil",  speed:2.2, gap:150, spawn:140 },
+      medio:  { label:"Medio",  speed:3.1, gap:125, spawn:120 },
+      dificil:{ label:"Difícil",speed:3.9, gap:105, spawn:105 }
     };
-
     let currentDifficulty = null;
 
-    //////////////////////////////
-    // FUNCIONES DEL JUEGO
-    //////////////////////////////
+    /******************************************
+     * 4) RESET
+     ******************************************/
+    function fullReset() {
+      score = 0;
+      frameCount = 0;
+      obstacles = [];
+      usedQuestionIndices.clear();
+      bird.x = canvas.width * 0.15;
+      bird.y = canvas.height * 0.5;
+      bird.vy = 0;
+      level = 1;
+      celebrationTimer = 0;
+      scoreLabel.textContent = "Puntos: 0";
+    }
 
     function softResetAfterQuestion() {
       frameCount = 0;
@@ -401,65 +388,49 @@
       bird.vy = 0;
     }
 
-    function fullReset() {
-      frameCount = 0;
-      score = 0;
-      obstacles = [];
-      bird.x = canvas.width * 0.15;
-      bird.y = canvas.height * 0.5;
-      bird.vy = 0;
-      level = 1;
-      isCelebrating = false;
-      celebrationTimer = 0;
-      celebrationBaseY = bird.y;
-      scoreLabel.textContent = "Puntos: 0";
-    }
-
+    /******************************************
+     * 5) MENÚ & GAME START
+     ******************************************/
     function goToMenu() {
       gameState = "menu";
       fullReset();
-      usedQuestionIndices.clear();
-      questionBox.style.display = "none";
       hud.style.display = "none";
       menu.style.display = "flex";
+      questionBox.style.display = "none";
       difficultyLabel.textContent = "Dificultad: -";
 
-      // música solo en menú
-      if (musicEnabled) {
-        ensureMusicPlaying();
-      }
-
+      ensureMenuMusic();
       draw();
     }
 
     function startGame(diffKey) {
       currentDifficultyKey = diffKey;
       currentDifficulty = difficultyConfig[diffKey];
-      difficultyLabel.textContent =
-        "Dificultad: " + currentDifficulty.label;
 
       fullReset();
-      usedQuestionIndices.clear();
 
       hud.style.display = "flex";
       menu.style.display = "none";
-      questionBox.style.display = "none";
 
-      // al empezar a jugar, apagamos música de menú
-      if (musicEnabled && musicStarted) {
-        fadeMusicTo(0, 700, true);
-      }
+      // apagar música del menú
+      if (musicStarted) fadeMusicTo(0, 700, true);
+
+      difficultyLabel.textContent = "Dificultad: " + currentDifficulty.label;
 
       gameState = "playing";
       loop();
     }
 
+    /******************************************
+     * 6) PREGUNTAS
+     ******************************************/
     function askQuestion() {
       const available = [...questionsPool.keys()].filter(
-        (i) => !usedQuestionIndices.has(i)
+        i => !usedQuestionIndices.has(i)
       );
+
       if (available.length === 0) {
-        alert("¡Contestaste todas las preguntas! 🎉");
+        alert("¡Respondiste todo! 🎉");
         goToMenu();
         return;
       }
@@ -471,361 +442,43 @@
       const q = questionsPool[currentQuestionIndex];
       questionText.textContent = q.text;
 
-      optionButtons.forEach((btn, idx) => {
-        if (q.options[idx]) {
-          btn.textContent = q.options[idx];
-          btn.style.display = "block";
-        } else {
-          btn.style.display = "none";
-        }
+      optionButtons.forEach((btn, i) => {
+        btn.textContent = q.options[i];
       });
 
-      try {
-        sfxHit.currentTime = 0;
-        sfxHit.play();
-      } catch (e) {}
+      sfxHit.currentTime = 0;
+      sfxHit.play();
 
       questionBox.style.display = "flex";
       gameState = "question";
-
-      // (la música ya está apagada en el vuelo, así que no tocamos volumen acá)
     }
 
-    function handleAnswer(selectedIndex) {
+    function handleAnswer(idx) {
       const q = questionsPool[currentQuestionIndex];
-      if (!q) return;
-
-      if (selectedIndex === q.correctIndex) {
+      if (idx === q.correctIndex) {
         questionBox.style.display = "none";
-        alert("¡Respuesta correcta! El pajarito vuelve a volar 🐦✨");
-
+        alert("¡Correcto! 🐦✨");
         softResetAfterQuestion();
         gameState = "playing";
-        hud.style.display = "flex";
-
         loop();
       } else {
-        alert("Respuesta incorrecta. Fin del juego 🐦💥");
+        alert("Incorrecto 💥");
         goToMenu();
       }
     }
 
+    /******************************************
+     * 7) INPUT
+     ******************************************/
     function flap() {
       if (gameState === "playing") {
         bird.vy = jumpStrength;
-        // sin música en el vuelo
-        try {
-          sfxFlap.currentTime = 0;
-          sfxFlap.play();
-        } catch (e) {}
+        sfxFlap.currentTime = 0;
+        sfxFlap.play();
       }
     }
 
-    function spawnObstacle() {
-      const gh = currentDifficulty.gapHeight;
-      const margin = 60;
-      const centerY =
-        margin +
-        gh / 2 +
-        Math.random() * (canvas.height - 2 * margin - gh);
-
-      obstacles.push({
-        x: canvas.width + 40,
-        width: 60,
-        gapY: centerY,
-        gapHeight: gh,
-        passed: false
-      });
-    }
-
-    function checkLevelUp() {
-      if (
-        currentDifficultyKey === "facil" &&
-        level === 1 &&
-        score >= 15 &&
-        !isCelebrating
-      ) {
-        level = 2;
-        isCelebrating = true;
-        celebrationTimer = 0;
-        celebrationBaseY = bird.y;
-        obstacles = [];
-        bird.vy = 0;
-
-        alert("¡Felicitaciones! Pasaste al Nivel 2 (Medio) 🎉");
-
-        gameState = "celebration";
-        loop();
-        return;
-      }
-
-      if (level === 2 && score >= 30 && !isCelebrating) {
-        level = 3;
-        isCelebrating = true;
-        celebrationTimer = 0;
-        celebrationBaseY = bird.y;
-        obstacles = [];
-        bird.vy = 0;
-
-        alert("¡Nivel máximo! Ahora jugás en Difícil 💥");
-
-        gameState = "celebration";
-        loop();
-        return;
-      }
-    }
-
-    function updateObstacles() {
-      const speed = currentDifficulty.speed;
-
-      obstacles.forEach((o) => {
-        o.x -= speed;
-
-        if (!o.passed && o.x + o.width < bird.x) {
-          o.passed = true;
-          score++;
-          scoreLabel.textContent = "Puntos: " + score;
-
-          try {
-            sfxScore.currentTime = 0;
-            sfxScore.play();
-          } catch (e) {}
-
-          checkLevelUp();
-        }
-      });
-
-      obstacles = obstacles.filter((o) => o.x + o.width > -40);
-
-      if (frameCount % currentDifficulty.spawnInterval === 0) {
-        spawnObstacle();
-      }
-    }
-
-    function checkCollisions() {
-  // Colisión con piso/techo
-  if (bird.y < -10 || bird.y + bird.height > canvas.height - 20) {
-    askQuestion();
-    return;
-  }
-
-  for (const o of obstacles) {
-    const bx1 = bird.x;
-    const bx2 = bird.x + bird.width;
-    const by1 = bird.y;
-    const by2 = bird.y + bird.height;
-
-    const ox1 = o.x + 10;           // achicamos el hitbox
-    const ox2 = o.x + o.width - 10; // por ambos lados
-
-    const overlapX = bx2 > ox1 && bx1 < ox2;
-
-    // achicar mucho altura de colisión
-    const bladeTopEnd = o.gapY - o.gapHeight / 2 + 35;
-    const bladeBottomStart = o.gapY + o.gapHeight / 2 - 35;
-
-    const hitsTop = by1 < bladeTopEnd;
-    const hitsBottom = by2 > bladeBottomStart;
-
-    if (overlapX && (hitsTop || hitsBottom)) {
-      askQuestion();
-      return;
-    }
-  }
-}
-
-
-    function drawBackground() {
-      ctx.fillStyle = "#63c368";
-      ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
-    }
-
-    // Dibujo de la hoz (oz comunista) como obstáculo
-    function drawSickleObstacle(o, isTop) {
-      ctx.save();
-
-      const centerX = o.x + o.width / 2;
-
-      if (isTop) {
-        ctx.translate(centerX, o.gapY - o.gapHeight / 2);
-      } else {
-        ctx.translate(centerX, o.gapY + o.gapHeight / 2);
-        ctx.scale(1, -1); // espejado vertical para la de abajo
-      }
-
-      // Mango
-      ctx.fillStyle = "#8b5a2b";
-      ctx.fillRect(-6, 0, 12, 60);
-
-      // Hoz gris
-      ctx.beginPath();
-      ctx.lineWidth = 7;
-      ctx.strokeStyle = "#dddddd";
-      ctx.arc(0, 0, 40, Math.PI * 0.1, Math.PI * 1.2, false);
-      ctx.stroke();
-
-      // Detalle rojo
-      ctx.beginPath();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = "#d62828";
-      ctx.arc(0, 0, 40, Math.PI * 0.3, Math.PI * 1.0, false);
-      ctx.stroke();
-
-      ctx.restore();
-    }
-
-    function drawBird() {
-      const { x, y, width, height } = bird;
-
-      ctx.save();
-
-      const angle = Math.max(-0.4, Math.min(0.4, bird.vy * 0.03));
-      ctx.translate(x + width / 2, y + height / 2);
-      ctx.rotate(angle);
-
-      // Cuerpo rojo
-      ctx.fillStyle = "#d62828";
-      ctx.beginPath();
-      ctx.ellipse(0, 0, width / 2 + 2, height / 2 + 4, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Panza blanca
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.ellipse(0, height * 0.15, width / 2.1, height / 2.4, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Copito de plumas
-      ctx.fillStyle = "#b21f2b";
-      ctx.beginPath();
-      ctx.moveTo(-4, -height / 2 - 2);
-      ctx.lineTo(2, -height / 2 - 8);
-      ctx.lineTo(8, -height / 2 - 2);
-      ctx.closePath();
-      ctx.fill();
-
-      // Cola negra
-      ctx.fillStyle = "#111111";
-      ctx.beginPath();
-      ctx.moveTo(-width / 2 - 6, 4);
-      ctx.lineTo(-width / 2 - 1, -2);
-      ctx.lineTo(-width / 2 + 3, 6);
-      ctx.closePath();
-      ctx.fill();
-
-      // Detalle verde
-      ctx.fillStyle = "#00ff55";
-      ctx.beginPath();
-      ctx.moveTo(-width / 2 - 2, 2);
-      ctx.lineTo(-width / 2 - 8, -2);
-      ctx.lineTo(-width / 2 - 4, 6);
-      ctx.closePath();
-      ctx.fill();
-
-      // Pico amarillo
-      ctx.fillStyle = "#ffd52e";
-      ctx.beginPath();
-      ctx.moveTo(width / 2 + 2, 0);
-      ctx.lineTo(width / 2 + 12, -5);
-      ctx.lineTo(width / 2 + 12, 5);
-      ctx.closePath();
-      ctx.fill();
-
-      // Ojo + ceja
-      const eyeX = width * 0.15;
-      const eyeY = -height * 0.15;
-
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.arc(eyeX, eyeY, 4.8, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#000000";
-      ctx.beginPath();
-      ctx.arc(eyeX + 1, eyeY + 0.5, 2.2, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#111111";
-      ctx.save();
-      ctx.translate(eyeX - 3, eyeY - 5);
-      ctx.rotate(-0.2);
-      ctx.fillRect(0, 0, 11, 2.5);
-      ctx.restore();
-
-      ctx.restore();
-    }
-
-    function drawObstacles() {
-      for (const o of obstacles) {
-        drawSickleObstacle(o, true);  // arriba
-        drawSickleObstacle(o, false); // abajo
-      }
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawBackground();
-      drawObstacles();
-      drawBird();
-    }
-
-    function loop() {
-      if (gameState === "playing") {
-        frameCount++;
-        bird.vy += gravity;
-        bird.y += bird.vy;
-        updateObstacles();
-        checkCollisions();
-      } else if (gameState === "celebration") {
-        celebrationTimer++;
-        bird.vy = 0;
-        celebrationBaseY = canvas.height * 0.5;
-        bird.y = celebrationBaseY + Math.sin(celebrationTimer * 0.3) * 10;
-
-        if (celebrationTimer > 120) {
-          isCelebrating = false;
-          gameState = "playing";
-          frameCount = 0;
-          obstacles = [];
-          bird.vy = 0;
-
-          if (level === 2) {
-            currentDifficultyKey = "medio";
-            currentDifficulty = difficultyConfig["medio"];
-          } else if (level === 3) {
-            currentDifficultyKey = "dificil";
-            currentDifficulty = difficultyConfig["dificil"];
-          }
-          difficultyLabel.textContent =
-            "Dificultad: " + currentDifficulty.label;
-        }
-      }
-
-      draw();
-
-      if (gameState === "playing" || gameState === "celebration") {
-        requestAnimationFrame(loop);
-      }
-    }
-
-    //////////////////////////////
-    // EVENTOS: juego
-    //////////////////////////////
-
-    menuButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        startGame(btn.dataset.diff);
-      });
-    });
-
-    optionButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const idx = Number(btn.dataset.index);
-        if (gameState === "question") handleAnswer(idx);
-      });
-    });
-
-    window.addEventListener("keydown", (e) => {
+    window.addEventListener("keydown", e => {
       if (e.code === "Space") {
         e.preventDefault();
         flap();
@@ -833,50 +486,279 @@
     });
 
     canvas.addEventListener("mousedown", flap);
-    canvas.addEventListener(
-      "touchstart",
-      (e) => {
-        e.preventDefault();
-        flap();
-      },
-      { passive: false }
-    );
+    canvas.addEventListener("touchstart", e => {
+      e.preventDefault();
+      flap();
+    }, { passive:false });
 
-    //////////////////////////////
-    // EVENTOS: música
-    //////////////////////////////
+    /******************************************
+     * 8) OBSTÁCULOS CON DECORACIÓN COMUNISTA
+     ******************************************/
+    function spawnObstacle() {
+      const gap = currentDifficulty.gap;
+      const margin = 60;
+      const centerY =
+        margin + gap/2 + Math.random() * (canvas.height - 2*margin - gap);
 
-    function updateMusicToggleLabel() {
-      musicToggleBtn.textContent = musicEnabled
-        ? "🎵 Música: ON"
-        : "🎵 Música: OFF";
+      obstacles.push({
+        x: canvas.width + 40,
+        width: 70,
+        gapY: centerY,
+        gapHeight: gap,
+        passed: false
+      });
     }
 
+    function drawCommunistDecor(x, y, w, h) {
+      ctx.save();
+      ctx.translate(x + w/2, y + h/2);
+
+      // hoz
+      ctx.beginPath();
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = "#d62828";
+      ctx.arc(0, 0, 22, Math.PI*0.2, Math.PI*1.3);
+      ctx.stroke();
+
+      // mango
+      ctx.fillStyle = "#8b5a2b";
+      ctx.fillRect(-4, -6, 8, 24);
+
+      // martillo
+      ctx.fillStyle = "#d62828";
+      ctx.fillRect(-14, -3, 28, 6);
+      ctx.fillRect(-3, -3, 6, 24);
+
+      ctx.restore();
+    }
+
+    function drawObstacles() {
+      ctx.fillStyle = "#0f766e";
+
+      for (const o of obstacles) {
+        const topH = o.gapY - o.gapHeight/2;
+        const bottomY = o.gapY + o.gapHeight/2;
+
+        // tubo arriba
+        ctx.fillRect(o.x, 0, o.width, topH);
+        drawCommunistDecor(o.x, topH - 50, o.width, 50);
+
+        // tubo abajo
+        ctx.fillRect(o.x, bottomY, o.width, canvas.height - bottomY);
+        drawCommunistDecor(o.x, bottomY, o.width, 50);
+      }
+    }
+
+    /******************************************
+     * 9) COLISIONES PERFECTAS (rectángulos)
+     ******************************************/
+    function checkCollisions() {
+      if (bird.y < 0 || bird.y + bird.height > canvas.height - 40) {
+        askQuestion();
+        return;
+      }
+
+      for (const o of obstacles) {
+        const topH = o.gapY - o.gapHeight/2;
+        const bottomY = o.gapY + o.gapHeight/2;
+
+        const bx1 = bird.x;
+        const bx2 = bird.x + bird.width;
+        const by1 = bird.y;
+        const by2 = bird.y + bird.height;
+
+        const ox1 = o.x;
+        const ox2 = o.x + o.width;
+
+        const overlapX = bx2 > ox1 && bx1 < ox2;
+        const hitsTop = by1 < topH;
+        const hitsBottom = by2 > bottomY;
+
+        if (overlapX && (hitsTop || hitsBottom)) {
+          askQuestion();
+          return;
+        }
+      }
+    }
+
+    /******************************************
+     * 10) BIRD DRAW
+     ******************************************/
+    function drawBird() {
+      const {x,y,width,height} = bird;
+
+      ctx.save();
+      let angle = Math.max(-0.4, Math.min(0.4, bird.vy * 0.03));
+
+      ctx.translate(x + width/2, y + height/2);
+      ctx.rotate(angle);
+
+      // Cuerpo rojo
+      ctx.fillStyle = "#d62828";
+      ctx.beginPath();
+      ctx.ellipse(0,0,width/2+2,height/2+4,0,0,Math.PI*2);
+      ctx.fill();
+
+      // Panza
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.ellipse(0,height*0.15,width/2.1,height/2.4,0,0,Math.PI*2);
+      ctx.fill();
+
+      // Copito
+      ctx.fillStyle = "#b21f2b";
+      ctx.beginPath();
+      ctx.moveTo(-4,-height/2-2);
+      ctx.lineTo(2,-height/2-8);
+      ctx.lineTo(8,-height/2-2);
+      ctx.fill();
+
+      // Cola negra
+      ctx.fillStyle = "#111";
+      ctx.beginPath();
+      ctx.moveTo(-width/2-6,4);
+      ctx.lineTo(-width/2-1,-2);
+      ctx.lineTo(-width/2+3,6);
+      ctx.fill();
+
+      // detalle verde
+      ctx.fillStyle = "#00ff55";
+      ctx.beginPath();
+      ctx.moveTo(-width/2-2,2);
+      ctx.lineTo(-width/2-8,-2);
+      ctx.lineTo(-width/2-4,6);
+      ctx.fill();
+
+      // Pico
+      ctx.fillStyle = "#ffd52e";
+      ctx.beginPath();
+      ctx.moveTo(width/2+2,0);
+      ctx.lineTo(width/2+12,-5);
+      ctx.lineTo(width/2+12,5);
+      ctx.fill();
+
+      // Ojo
+      const eyeX = width*0.15;
+      const eyeY = -height*0.15;
+
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(eyeX,eyeY,4.8,0,Math.PI*2);
+      ctx.fill();
+
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      ctx.arc(eyeX+1,eyeY+0.5,2.2,0,Math.PI*2);
+      ctx.fill();
+
+      // ceja
+      ctx.fillStyle = "#111";
+      ctx.save();
+      ctx.translate(eyeX-3, eyeY-5);
+      ctx.rotate(-0.2);
+      ctx.fillRect(0,0,11,2.5);
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    /******************************************
+     * 11) DIBUJO GENERAL
+     ******************************************/
+    function drawBackground() {
+      ctx.fillStyle = "#63c368";
+      ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+    }
+
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      drawBackground();
+      drawObstacles();
+      drawBird();
+    }
+
+    /******************************************
+     * 12) LOOP
+     ******************************************/
+    function loop() {
+      if (gameState === "playing") {
+        frameCount++;
+        bird.vy += gravity;
+        bird.y += bird.vy;
+
+        if (frameCount % currentDifficulty.spawn === 0) spawnObstacle();
+
+        obstacles.forEach(o => {
+          o.x -= currentDifficulty.speed;
+
+          if (!o.passed && o.x + o.width < bird.x) {
+            o.passed = true;
+            score++;
+            scoreLabel.textContent = "Puntos: " + score;
+
+            sfxScore.currentTime = 0;
+            sfxScore.play();
+
+            if (currentDifficultyKey==="facil" && level===1 && score>=15) {
+              level=2;
+              alert("✨ Pasaste al Nivel Medio ✨");
+              currentDifficultyKey="medio";
+              currentDifficulty=difficultyConfig["medio"];
+              obstacles=[];
+              frameCount=0;
+            }
+            if (level===2 && score>=30) {
+              level=3;
+              alert("🔥 Nivel Difícil activado 🔥");
+              currentDifficultyKey="dificil";
+              currentDifficulty=difficultyConfig["dificil"];
+              obstacles=[];
+              frameCount=0;
+            }
+          }
+        });
+
+        checkCollisions();
+      }
+
+      draw();
+
+      if (gameState==="playing") requestAnimationFrame(loop);
+    }
+
+    /******************************************
+     * 13) EVENTOS DE MENÚ / MÚSICA
+     ******************************************/
     musicToggleBtn.addEventListener("click", () => {
       musicEnabled = !musicEnabled;
-      updateMusicToggleLabel();
+      musicToggleBtn.textContent = musicEnabled ? "🎵 Música: ON" : "🎵 Música: OFF";
 
-      if (musicEnabled) {
-        ensureMusicPlaying();
-      } else if (musicStarted) {
-        fadeMusicTo(0, 800, true);
-      }
+      if (musicEnabled) ensureMenuMusic();
+      else fadeMusicTo(0, 800, true);
     });
 
     testSoundBtn.addEventListener("click", () => {
-      ensureMusicPlaying();
-      try {
-        sfxScore.currentTime = 0;
-        sfxScore.play();
-      } catch (e) {}
+      ensureMenuMusic();
+      sfxScore.currentTime = 0;
+      sfxScore.play();
     });
 
-    // iniciar en menú con música
-    updateMusicToggleLabel();
+    optionButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        handleAnswer(Number(btn.dataset.index));
+      });
+    });
+
+    menuButtons.forEach(btn => {
+      btn.addEventListener("click", () => startGame(btn.dataset.diff));
+    });
+
+    /******************************************
+     * 14) ARRANQUE
+     ******************************************/
     draw();
-    if (musicEnabled) {
-      ensureMusicPlaying();
-    }
+    ensureMenuMusic();
+
   </script>
 </body>
 </html>
