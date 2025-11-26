@@ -109,7 +109,7 @@
 <h1>El Bloque Constitucional: Modo Aventura 🐦⚖️</h1>
 
 <div id="gameWrapper">
-  <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <canvas id="gameCanvas" width="1440" height="960"></canvas>
 
   <div id="hud">
     <span id="scoreLabel">Puntos: 0</span>
@@ -255,7 +255,7 @@ const musicGame = new Audio("./flappy_flying_deep.wav");
 musicGame.loop = true;
 let musicStarted = false;
 let musicEnabled = true;
-const musicBaseVolume = 0.20;   // volumen más bajito aún
+const musicBaseVolume = 0.30;   // volumen más bajito aún
 
 const sfxFlap  = new Audio("./sfx_flap_soft.wav");
 sfxFlap.volume = 0.8;
@@ -355,11 +355,11 @@ const gravity = 0.35;
 const jumpStrength = -6.8;
 
 const bird = {
-  x: 110,
+  x: 240,
   y: canvas.height / 2,
   vy: 0,
-  width: 48,
-  height: 34
+  width: 102,
+  height: 78
 };
 
 const difficultyConfig = {
