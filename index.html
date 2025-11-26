@@ -1,34 +1,883 @@
-function drawSickleObstacle(o, isTop) {
-  ctx.save();
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>El Bloque Constitucional: Modo Aventura 🐦⚖️</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0b1020;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+    }
 
-  const centerX = o.x + o.width / 2;
+    h1 {
+      margin: 10px 0;
+      font-size: 22px;
+      text-align: center;
+    }
 
-  if (isTop) {
-    // Obstáculo de arriba
-    ctx.translate(centerX, o.gapY - o.gapHeight / 2);
-  } else {
-    // Obstáculo de abajo
-    ctx.translate(centerX, o.gapY + o.gapHeight / 2);
-    ctx.scale(1, -1); // lo espejamos verticalmente
-  }
+    #gameWrapper {
+      position: relative;
+    }
 
-  // Mango
-  ctx.fillStyle = "#8b5a2b";
-  ctx.fillRect(-6, 0, 12, 60);
+    #gameCanvas {
+      background: linear-gradient(#7be0ff, #e0f8ff);
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 
-  // Hoz (blade)
-  ctx.beginPath();
-  ctx.lineWidth = 7;
-  ctx.strokeStyle = "#dddddd";
-  ctx.arc(0, 0, 40, Math.PI * 0.1, Math.PI * 1.2, false);
-  ctx.stroke();
+      /* tamaño visual grande */
+      width: min(960px, 95vw);
+      height: auto;
+    }
 
-  // Borde rojo (detalle ideológico 😅)
-  ctx.beginPath();
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "#d62828";
-  ctx.arc(0, 0, 40, Math.PI * 0.3, Math.PI * 1.0, false);
-  ctx.stroke();
+    #hud {
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      right: 8px;
+      display: none;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: bold;
+      text-shadow: 1px 1px 3px #000;
+      pointer-events: none;
+    }
 
-  ctx.restore();
-}
+    #menu {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #musicControls {
+      margin-top: 6px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: none;
+      background: #ffe066;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+      font-size: 13px;
+    }
+
+    button:hover {
+      background: #ffea8a;
+    }
+
+    #questionBox {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+
+    .overlayCard {
+      background: rgba(10, 10, 25, 0.92);
+      padding: 18px;
+      border-radius: 12px;
+      width: 80%;
+      max-width: 380px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+    }
+
+    .overlayCard h2 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    .options {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .small {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>El Bloque Constitucional: Modo Aventura 🐦⚖️</h1>
+
+  <div id="gameWrapper">
+    <!-- canvas interno grande -->
+    <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+    <div id="hud">
+      <span id="scoreLabel">Puntos: 0</span>
+      <span id="difficultyLabel">Dificultad: -</span>
+    </div>
+
+    <!-- Caja de Preguntas -->
+    <div id="questionBox">
+      <div class="overlayCard">
+        <h2>¡Ups! El pajarito chocó</h2>
+        <p id="questionText"></p>
+
+        <div class="options">
+          <button class="optionBtn" data-index="0"></button>
+          <button class="optionBtn" data-index="1"></button>
+          <button class="optionBtn" data-index="2"></button>
+          <button class="optionBtn" data-index="3"></button>
+        </div>
+
+        <p class="small">
+          Si contestás bien, el pajarito vuelve a volar. Si no, termina.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div id="menu">
+    <span style="font-size: 14px">Elegí dificultad:</span>
+    <button data-diff="facil">Fácil</button>
+    <button data-diff="medio">Medio</button>
+    <button data-diff="dificil">Difícil</button>
+  </div>
+
+  <div id="musicControls">
+    <button id="musicToggleBtn">🎵 Música: ON</button>
+    <button id="testSoundBtn">🔊 Probar sonido</button>
+  </div>
+
+  <script>
+    //////////////////////////////
+    // PREGUNTAS
+    //////////////////////////////
+    const questionsPool = [
+      { text:"El Bloque Constitucional Federal está compuesto por:", options:[
+        "Códigos de fondo y tratados sin jerarquía",
+        "Constitución Nacional + Tratados de DDHH con jerarquía constitucional",
+        "Leyes nacionales","Sentencias de la Corte IDH"], correctIndex:1 },
+      { text:"La jerarquía normativa puede graficarse como:", options:[
+        "Un triángulo","Una pirámide","Un trapecio","Un rectángulo"], correctIndex:2 },
+      { text:"¿Qué característica distingue al Bloque Constitucional Federal?", options:[
+        "Regula solo cuestiones civiles","Es la fuente jurídica más baja",
+        "Goza de supremacía frente a normas inferiores","Solo se aplica a casos penales"], correctIndex:2 },
+      { text:"Los tratados internacionales con jerarquía constitucional fueron incorporados principalmente en:",
+        options:["Reforma de 1957","Reforma de 1994","Reforma de 1860","Reforma de 2001"], correctIndex:1 },
+      { text:"Las normas ubicadas en el nivel superior del sistema son generalmente:",
+        options:["Detalladas","Breves y genéricas","Solo para el ejecutivo","Municipales"], correctIndex:1 },
+      { text:"El control de constitucionalidad argentino es:",
+        options:["Concentrado","Difuso","Legislativo","Realizado por la Comisión IDH"], correctIndex:1 },
+      { text:"¿Quiénes pueden ejercer control de constitucionalidad?",
+        options:["Solo la Corte Suprema","Solo jueces federales","Todos los jueces","Los legisladores"], correctIndex:2 },
+      { text:"La función de no aplicar normas contrarias al Bloque Constitucional Federal es:",
+        options:["Función legislativa","Función positiva","Función negativa o represiva","Función administrativa"], correctIndex:2 },
+      { text:"El control de constitucionalidad tiene efectos:",
+        options:["Erga omnes","Inter partes","Territoriales","Sobre todas las leyes"], correctIndex:1 },
+      { text:"El caso Halabi constituye una excepción porque:",
+        options:["No fue decidido por la Corte","Tuvo efecto colectivo","Invalidó tratados","Eliminó control"], correctIndex:1 },
+      { text:"La Corte IDH señaló en Almonacid Arellano que:",
+        options:["Los jueces pueden ignorar SIDH","Aplicar normas contrarias",
+        "Una norma local contraria a la CADH es inconvencional","El DI no sirve"], correctIndex:2 },
+      { text:"El control de convencionalidad puede ser:",
+        options:["Solo a petición","Solo de oficio","A petición o de oficio","Al final del proceso"], correctIndex:2 },
+      { text:"¿Qué norma de Tucumán regula el control constitucional?",
+        options:["Const. Tucumán art 10","CPC art 87","Ley 24.660","Ley 6315"], correctIndex:1 },
+      { text:"Una diferencia entre Corte IDH y Comisión IDH es que:",
+        options:["Ambas litigiosas","La Comisión resuelve","La Corte dicta sentencias obligatorias","La Corte recomienda"], correctIndex:2 },
+      { text:"Según CSJN en Carranza Latrubesse, las recomendaciones de la Comisión IDH son:",
+        options:["No vinculantes","Vinculantes"], correctIndex:0 },
+      { text:"¿Qué derecho reclamaba S.R.L.?",
+        options:["Salidas","Trabajo","Estudiar carrera universitaria","Reducción"], correctIndex:2 },
+      { text:"¿Qué tipo de acción presentó S.R.L.?",
+        options:["Amparo","Casación","Habeas corpus correctivo","Queja"], correctIndex:2 },
+      { text:"El único derecho del que está privada una persona condenada es:",
+        options:["Educación","Salud","Libertad ambulatoria","Participación política"], correctIndex:2 },
+      { text:"El paradigma adecuado para interpretar el caso:",
+        options:["Seguridad","Orden público","Derechos Humanos","Prevención"], correctIndex:2 },
+      { text:"La CSJT determinó que pedir informes al SP:",
+        options:["Siempre necesario","Prohibido",
+        "No previsto y generaba demoras inconstitucionales","Irrelevante"], correctIndex:2 },
+      { text:"La Ley 26.206 establece que la educación en encierro:",
+        options:["Puede limitarse","Requiere autorización",
+        "No admite limitación por encierro","Depende del director"], correctIndex:2 },
+      { text:"El fundamento del derecho a estudiar según CSJT:",
+        options:["Fines de la pena","Reinserción","Condición humana","Presupuesto"], correctIndex:2 },
+      { text:"La CSJT ordenó al juez de ejecución:",
+        options:["Negar permisos","Nueva condena","Garantizar cursado y exámenes","Más informes"], correctIndex:2 },
+      { text:"Principal obstáculo al derecho:",
+        options:["Transporte","Demora por informes penitenciarios","Cupo","Conducta"], correctIndex:1 },
+      { text:"Educación en personas privadas de libertad está protegida por:",
+        options:["Reglamentos","Constitución y tratados","Decretos","Informes"], correctIndex:1 },
+      { text:"La jueza respecto del art. 562 CCyC declaró:",
+        options:["Constitucionalidad","Inconstitucionalidad e inconvencionalidad parcial",
+        "Inaplicabilidad","Derogación"], correctIndex:1 },
+      { text:"Los peticionantes usaban GS porque:",
+        options:["Laboral","Patologías que hacían inviable el embarazo","Prohibición","Más barata"], correctIndex:1 },
+      { text:"La jueza fundamentó en:",
+        options:["Adm","Penal","Familia + salud reproductiva","Comercial"], correctIndex:2 },
+      { text:"La filiación se determinó por:",
+        options:["Gestante","Voluntad procreacional + genética","Registro civil","Plazos"], correctIndex:1 },
+      { text:"La jueza destacó:",
+        options:["Neutralidad","Interés superior del niño","Reserva de ley","Orden público"], correctIndex:1 },
+      { text:"La GS no fue regulada porque:",
+        options:["No existía","Requería debate interdisciplinario profundo","Era ilegal","No había casos"], correctIndex:1 },
+      { text:"La sentencia ordenó que el niño/a sea:",
+        options:["Hijo de gestante","Sin filiación","Inscripto con apellidos genéticos","Adoptabilidad"], correctIndex:2 },
+      { text:"La inconstitucionalidad fue:",
+        options:["Total","Parcial","Errónea","Retroactiva"], correctIndex:1 },
+      { text:"Leading case estadounidense:",
+        options:["Plessy","Brown","Marbury","Miranda"], correctIndex:2 },
+      { text:"Primer antecedente argentino:",
+        options:["Halabi","Sojo","Carranza","Acosta"], correctIndex:1 },
+      { text:"El caso Sojo versaba sobre:",
+        options:["Culto","Expresión + prisión por Diputados","Educación","Propiedad"], correctIndex:1 },
+      { text:"Opiniones consultivas de Corte IDH son:",
+        options:["Obligatorias","Sin valor","Interpretaciones autorizadas","Disciplinarias"], correctIndex:2 },
+      { text:"Sentencias de Corte IDH que no involucran a Argentina:",
+        options:["Obligatorias","Doctrina","No citables","Modifican leyes"], correctIndex:1 },
+      { text:"La Comisión IDH emite:",
+        options:["Sentencias","Opiniones y recomendaciones","Órdenes","Decretos"], correctIndex:1 },
+      { text:"El control de constitucionalidad evita que:",
+        options:["El poder judicial legisle","Se apliquen normas contrarias al bloque","Analicen tratados","Congreso regule"], correctIndex:1 },
+      { text:"Paradigma de seguridad en S.R.L.:",
+        options:["Reconocía derecho","Supeditaba a informes y conducta","Eliminaba educación","Acceso inmediato"], correctIndex:1 },
+      { text:"El trapecio representa:",
+        options:["Niveles judiciales","Jerarquía normativa","Tipos de tratados","Proceso legislativo"], correctIndex:1 },
+      { text:"S.R.L. es ejemplo de:",
+        options:["Control correcto","Desconocimiento SIDH","Prohibición de estudiar","Fallo disciplinario"], correctIndex:0 },
+      { text:"Control judicial es mecanismo:",
+        options:["Adm","Legislativo","Interpoderes e intrapoder","Ejecutivo"], correctIndex:2 },
+      { text:"La jueza GS sostuvo que el Estado debe:",
+        options:["Interferir","Obstaculizar","No interferir y permitir salud reproductiva","Limitar ciencia"], correctIndex:2 },
+      { text:"El DI de DDHH integra el bloque porque:",
+        options:["Opcional","Ratificado libremente","Sin jerarquía","Inferior"], correctIndex:1 },
+      { text:"La condición humana implica:",
+        options:["Limitación","Autorización para estudiar","Derecho a educación","Pérdida de derechos"], correctIndex:2 },
+      { text:"La educación en cárceles debe ser:",
+        options:["Restringida","Opcional","Sin discriminación","Decidida por director"], correctIndex:2 },
+      { text:"La jueza GS usó tratados como:",
+        options:["Convención del Niño + CEDAW","Viena","Varsovia","Antártico"], correctIndex:0 },
+      { text:"El texto concluye que el control de constitucionalidad es:",
+        options:["Poder político","Instrumento esencial de la república","Accesorio","Doctrinario"], correctIndex:1 }
+    ];
+
+    //////////////////////////////
+    // AUDIO + FADES
+    //////////////////////////////
+
+    // ⚠️ Si tu archivo es MP3, cambiá a "./flappy_flying_deep.mp3"
+    const musicGame = new Audio("./flappy_flying_deep.wav");
+    musicGame.loop = true;
+    let musicStarted = false;
+    let musicEnabled = true;
+    const musicBaseVolume = 0.10; // bajita en el menú
+
+    const sfxFlap = new Audio("./sfx_flap_soft.wav");
+    sfxFlap.volume = 0.8;
+
+    const sfxScore = new Audio("./sfx_score_popup.wav");
+    sfxScore.volume = 0.8;
+
+    const sfxHit = new Audio("./sfx_damage.wav");
+    sfxHit.volume = 0.8;
+
+    let fadeAnimationId = null;
+
+    function fadeMusicTo(targetVolume, durationMs = 600, pauseAtEnd = false) {
+      if (!musicStarted) return;
+      if (fadeAnimationId) cancelAnimationFrame(fadeAnimationId);
+
+      const startVolume = musicGame.volume;
+      const delta = targetVolume - startVolume;
+      const startTime = performance.now();
+
+      function step(now) {
+        const t = Math.min(1, (now - startTime) / durationMs);
+        musicGame.volume = startVolume + delta * t;
+
+        if (t < 1) {
+          fadeAnimationId = requestAnimationFrame(step);
+        } else {
+          fadeAnimationId = null;
+          if (pauseAtEnd && targetVolume === 0) musicGame.pause();
+        }
+      }
+
+      fadeAnimationId = requestAnimationFrame(step);
+    }
+
+    function ensureMusicPlaying() {
+      if (!musicEnabled) return;
+
+      if (!musicStarted) {
+        musicStarted = true;
+        musicGame.currentTime = 0;
+        musicGame.volume = 0;
+        musicGame.play().then(() => {
+          fadeMusicTo(musicBaseVolume, 800);
+        }).catch(() => {
+          console.log("Autoplay bloqueado.");
+        });
+      } else if (musicGame.paused) {
+        musicGame.volume = 0;
+        musicGame.play().then(() => {
+          fadeMusicTo(musicBaseVolume, 800);
+        }).catch(() => {});
+      } else {
+        fadeMusicTo(musicBaseVolume, 400);
+      }
+    }
+
+    //////////////////////////////
+    // VARIABLES DEL JUEGO
+    //////////////////////////////
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const hud = document.getElementById("hud");
+    const scoreLabel = document.getElementById("scoreLabel");
+    const difficultyLabel = document.getElementById("difficultyLabel");
+
+    const menu = document.getElementById("menu");
+    const menuButtons = document.querySelectorAll("button[data-diff]");
+
+    const questionBox = document.getElementById("questionBox");
+    const questionText = document.getElementById("questionText");
+    const optionButtons = document.querySelectorAll(".optionBtn");
+
+    const musicToggleBtn = document.getElementById("musicToggleBtn");
+    const testSoundBtn = document.getElementById("testSoundBtn");
+
+    let gameState = "menu"; // menu | playing | question | celebration
+    let currentDifficultyKey = null;
+    let frameCount = 0;
+    let obstacles = [];
+    let score = 0;
+
+    // niveles automáticos
+    let level = 1;
+    let isCelebrating = false;
+    let celebrationTimer = 0;
+    let celebrationBaseY = 0;
+
+    let usedQuestionIndices = new Set();
+    let currentQuestionIndex = null;
+
+    const gravity = 0.35;
+    const jumpStrength = -6.8;
+
+    const bird = {
+      x: canvas.width * 0.15,
+      y: canvas.height * 0.5,
+      vy: 0,
+      width: 50,
+      height: 38
+    };
+
+    const difficultyConfig = {
+      facil: { label: "Fácil", speed: 2.2, gapHeight: 150, spawnInterval: 140 },
+      medio: { label: "Medio", speed: 3.1, gapHeight: 125, spawnInterval: 120 },
+      dificil: { label: "Difícil", speed: 3.9, gapHeight: 105, spawnInterval: 105 }
+    };
+
+    let currentDifficulty = null;
+
+    //////////////////////////////
+    // FUNCIONES DEL JUEGO
+    //////////////////////////////
+
+    function softResetAfterQuestion() {
+      frameCount = 0;
+      obstacles = [];
+      bird.x = canvas.width * 0.15;
+      bird.y = canvas.height * 0.5;
+      bird.vy = 0;
+    }
+
+    function fullReset() {
+      frameCount = 0;
+      score = 0;
+      obstacles = [];
+      bird.x = canvas.width * 0.15;
+      bird.y = canvas.height * 0.5;
+      bird.vy = 0;
+      level = 1;
+      isCelebrating = false;
+      celebrationTimer = 0;
+      celebrationBaseY = bird.y;
+      scoreLabel.textContent = "Puntos: 0";
+    }
+
+    function goToMenu() {
+      gameState = "menu";
+      fullReset();
+      usedQuestionIndices.clear();
+      questionBox.style.display = "none";
+      hud.style.display = "none";
+      menu.style.display = "flex";
+      difficultyLabel.textContent = "Dificultad: -";
+
+      // música solo en menú
+      if (musicEnabled) {
+        ensureMusicPlaying();
+      }
+
+      draw();
+    }
+
+    function startGame(diffKey) {
+      currentDifficultyKey = diffKey;
+      currentDifficulty = difficultyConfig[diffKey];
+      difficultyLabel.textContent =
+        "Dificultad: " + currentDifficulty.label;
+
+      fullReset();
+      usedQuestionIndices.clear();
+
+      hud.style.display = "flex";
+      menu.style.display = "none";
+      questionBox.style.display = "none";
+
+      // al empezar a jugar, apagamos música de menú
+      if (musicEnabled && musicStarted) {
+        fadeMusicTo(0, 700, true);
+      }
+
+      gameState = "playing";
+      loop();
+    }
+
+    function askQuestion() {
+      const available = [...questionsPool.keys()].filter(
+        (i) => !usedQuestionIndices.has(i)
+      );
+      if (available.length === 0) {
+        alert("¡Contestaste todas las preguntas! 🎉");
+        goToMenu();
+        return;
+      }
+
+      currentQuestionIndex =
+        available[Math.floor(Math.random() * available.length)];
+      usedQuestionIndices.add(currentQuestionIndex);
+
+      const q = questionsPool[currentQuestionIndex];
+      questionText.textContent = q.text;
+
+      optionButtons.forEach((btn, idx) => {
+        if (q.options[idx]) {
+          btn.textContent = q.options[idx];
+          btn.style.display = "block";
+        } else {
+          btn.style.display = "none";
+        }
+      });
+
+      try {
+        sfxHit.currentTime = 0;
+        sfxHit.play();
+      } catch (e) {}
+
+      questionBox.style.display = "flex";
+      gameState = "question";
+
+      // (la música ya está apagada en el vuelo, así que no tocamos volumen acá)
+    }
+
+    function handleAnswer(selectedIndex) {
+      const q = questionsPool[currentQuestionIndex];
+      if (!q) return;
+
+      if (selectedIndex === q.correctIndex) {
+        questionBox.style.display = "none";
+        alert("¡Respuesta correcta! El pajarito vuelve a volar 🐦✨");
+
+        softResetAfterQuestion();
+        gameState = "playing";
+        hud.style.display = "flex";
+
+        loop();
+      } else {
+        alert("Respuesta incorrecta. Fin del juego 🐦💥");
+        goToMenu();
+      }
+    }
+
+    function flap() {
+      if (gameState === "playing") {
+        bird.vy = jumpStrength;
+        // sin música en el vuelo
+        try {
+          sfxFlap.currentTime = 0;
+          sfxFlap.play();
+        } catch (e) {}
+      }
+    }
+
+    function spawnObstacle() {
+      const gh = currentDifficulty.gapHeight;
+      const margin = 60;
+      const centerY =
+        margin +
+        gh / 2 +
+        Math.random() * (canvas.height - 2 * margin - gh);
+
+      obstacles.push({
+        x: canvas.width + 40,
+        width: 60,
+        gapY: centerY,
+        gapHeight: gh,
+        passed: false
+      });
+    }
+
+    function checkLevelUp() {
+      if (
+        currentDifficultyKey === "facil" &&
+        level === 1 &&
+        score >= 15 &&
+        !isCelebrating
+      ) {
+        level = 2;
+        isCelebrating = true;
+        celebrationTimer = 0;
+        celebrationBaseY = bird.y;
+        obstacles = [];
+        bird.vy = 0;
+
+        alert("¡Felicitaciones! Pasaste al Nivel 2 (Medio) 🎉");
+
+        gameState = "celebration";
+        loop();
+        return;
+      }
+
+      if (level === 2 && score >= 30 && !isCelebrating) {
+        level = 3;
+        isCelebrating = true;
+        celebrationTimer = 0;
+        celebrationBaseY = bird.y;
+        obstacles = [];
+        bird.vy = 0;
+
+        alert("¡Nivel máximo! Ahora jugás en Difícil 💥");
+
+        gameState = "celebration";
+        loop();
+        return;
+      }
+    }
+
+    function updateObstacles() {
+      const speed = currentDifficulty.speed;
+
+      obstacles.forEach((o) => {
+        o.x -= speed;
+
+        if (!o.passed && o.x + o.width < bird.x) {
+          o.passed = true;
+          score++;
+          scoreLabel.textContent = "Puntos: " + score;
+
+          try {
+            sfxScore.currentTime = 0;
+            sfxScore.play();
+          } catch (e) {}
+
+          checkLevelUp();
+        }
+      });
+
+      obstacles = obstacles.filter((o) => o.x + o.width > -40);
+
+      if (frameCount % currentDifficulty.spawnInterval === 0) {
+        spawnObstacle();
+      }
+    }
+
+    function checkCollisions() {
+      if (bird.y < 0 || bird.y + bird.height > canvas.height) {
+        askQuestion();
+        return;
+      }
+
+      for (const o of obstacles) {
+        const topH = o.gapY - o.gapHeight / 2;
+        const bottomY = o.gapY + o.gapHeight / 2;
+
+        const bx1 = bird.x;
+        const bx2 = bird.x + bird.width;
+        const by1 = bird.y;
+        const by2 = bird.y + bird.height;
+
+        const ox1 = o.x;
+        const ox2 = o.x + o.width;
+
+        const overlapX = bx2 > ox1 && bx1 < ox2;
+        const hitsTop = by1 < topH;
+        const hitsBottom = by2 > bottomY;
+
+        if (overlapX && (hitsTop || hitsBottom)) {
+          askQuestion();
+          return;
+        }
+      }
+    }
+
+    function drawBackground() {
+      ctx.fillStyle = "#63c368";
+      ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+    }
+
+    // Dibujo de la hoz (oz comunista) como obstáculo
+    function drawSickleObstacle(o, isTop) {
+      ctx.save();
+
+      const centerX = o.x + o.width / 2;
+
+      if (isTop) {
+        ctx.translate(centerX, o.gapY - o.gapHeight / 2);
+      } else {
+        ctx.translate(centerX, o.gapY + o.gapHeight / 2);
+        ctx.scale(1, -1); // espejado vertical para la de abajo
+      }
+
+      // Mango
+      ctx.fillStyle = "#8b5a2b";
+      ctx.fillRect(-6, 0, 12, 60);
+
+      // Hoz gris
+      ctx.beginPath();
+      ctx.lineWidth = 7;
+      ctx.strokeStyle = "#dddddd";
+      ctx.arc(0, 0, 40, Math.PI * 0.1, Math.PI * 1.2, false);
+      ctx.stroke();
+
+      // Detalle rojo
+      ctx.beginPath();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#d62828";
+      ctx.arc(0, 0, 40, Math.PI * 0.3, Math.PI * 1.0, false);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawBird() {
+      const { x, y, width, height } = bird;
+
+      ctx.save();
+
+      const angle = Math.max(-0.4, Math.min(0.4, bird.vy * 0.03));
+      ctx.translate(x + width / 2, y + height / 2);
+      ctx.rotate(angle);
+
+      // Cuerpo rojo
+      ctx.fillStyle = "#d62828";
+      ctx.beginPath();
+      ctx.ellipse(0, 0, width / 2 + 2, height / 2 + 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Panza blanca
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.ellipse(0, height * 0.15, width / 2.1, height / 2.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Copito de plumas
+      ctx.fillStyle = "#b21f2b";
+      ctx.beginPath();
+      ctx.moveTo(-4, -height / 2 - 2);
+      ctx.lineTo(2, -height / 2 - 8);
+      ctx.lineTo(8, -height / 2 - 2);
+      ctx.closePath();
+      ctx.fill();
+
+      // Cola negra
+      ctx.fillStyle = "#111111";
+      ctx.beginPath();
+      ctx.moveTo(-width / 2 - 6, 4);
+      ctx.lineTo(-width / 2 - 1, -2);
+      ctx.lineTo(-width / 2 + 3, 6);
+      ctx.closePath();
+      ctx.fill();
+
+      // Detalle verde
+      ctx.fillStyle = "#00ff55";
+      ctx.beginPath();
+      ctx.moveTo(-width / 2 - 2, 2);
+      ctx.lineTo(-width / 2 - 8, -2);
+      ctx.lineTo(-width / 2 - 4, 6);
+      ctx.closePath();
+      ctx.fill();
+
+      // Pico amarillo
+      ctx.fillStyle = "#ffd52e";
+      ctx.beginPath();
+      ctx.moveTo(width / 2 + 2, 0);
+      ctx.lineTo(width / 2 + 12, -5);
+      ctx.lineTo(width / 2 + 12, 5);
+      ctx.closePath();
+      ctx.fill();
+
+      // Ojo + ceja
+      const eyeX = width * 0.15;
+      const eyeY = -height * 0.15;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(eyeX, eyeY, 4.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#000000";
+      ctx.beginPath();
+      ctx.arc(eyeX + 1, eyeY + 0.5, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#111111";
+      ctx.save();
+      ctx.translate(eyeX - 3, eyeY - 5);
+      ctx.rotate(-0.2);
+      ctx.fillRect(0, 0, 11, 2.5);
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    function drawObstacles() {
+      for (const o of obstacles) {
+        drawSickleObstacle(o, true);  // arriba
+        drawSickleObstacle(o, false); // abajo
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBackground();
+      drawObstacles();
+      drawBird();
+    }
+
+    function loop() {
+      if (gameState === "playing") {
+        frameCount++;
+        bird.vy += gravity;
+        bird.y += bird.vy;
+        updateObstacles();
+        checkCollisions();
+      } else if (gameState === "celebration") {
+        celebrationTimer++;
+        bird.vy = 0;
+        celebrationBaseY = canvas.height * 0.5;
+        bird.y = celebrationBaseY + Math.sin(celebrationTimer * 0.3) * 10;
+
+        if (celebrationTimer > 120) {
+          isCelebrating = false;
+          gameState = "playing";
+          frameCount = 0;
+          obstacles = [];
+          bird.vy = 0;
+
+          if (level === 2) {
+            currentDifficultyKey = "medio";
+            currentDifficulty = difficultyConfig["medio"];
+          } else if (level === 3) {
+            currentDifficultyKey = "dificil";
+            currentDifficulty = difficultyConfig["dificil"];
+          }
+          difficultyLabel.textContent =
+            "Dificultad: " + currentDifficulty.label;
+        }
+      }
+
+      draw();
+
+      if (gameState === "playing" || gameState === "celebration") {
+        requestAnimationFrame(loop);
+      }
+    }
+
+    //////////////////////////////
+    // EVENTOS: juego
+    //////////////////////////////
+
+    menuButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        startGame(btn.dataset.diff);
+      });
+    });
+
+    optionButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.dataset.index);
+        if (gameState === "question") handleAnswer(idx);
+      });
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        flap();
+      }
+    });
+
+    canvas.addEventListener("mousedown", flap);
+    canvas.addEventListener(
+      "touchstart",
+      (e) => {
+        e.preventDefault();
+        flap();
+      },
+      { passive: false }
+    );
+
+    //////////////////////////////
+    // EVENTOS: música
+    //////////////////////////////
+
+    function updateMusicToggleLabel() {
+      musicToggleBtn.textContent = musicEnabled
+        ? "🎵 Música: ON"
+        : "🎵 Música: OFF";
+    }
+
+    musicToggleBtn.addEventListener("click", () => {
+      musicEnabled = !musicEnabled;
+      updateMusicToggleLabel();
+
+      if (musicEnabled) {
+        ensureMusicPlaying();
+      } else if (musicStarted) {
+        fadeMusicTo(0, 800, true);
+      }
+    });
+
+    testSoundBtn.addEventListener("click", () => {
+      ensureMusicPlaying();
+      try {
+        sfxScore.currentTime = 0;
+        sfxScore.play();
+      } catch (e) {}
+    });
+
+    // iniciar en menú con música
+    updateMusicToggleLabel();
+    draw();
+    if (musicEnabled) {
+      ensureMusicPlaying();
+    }
+  </script>
+</body>
+</html>
