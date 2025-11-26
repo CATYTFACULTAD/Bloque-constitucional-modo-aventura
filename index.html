@@ -554,49 +554,90 @@ function drawBackground() {
 }
 
 function drawBird() {
-  const {x,y,width,height} = bird;
+  const { x, y, width, height } = bird;
 
-  // cuerpo rojo
-  ctx.fillStyle = "#ff3b3b";
+  ctx.save();
+
+  // Un poquito de rotación según la velocidad (da sensación de movimiento)
+  const angle = Math.max(-0.4, Math.min(0.4, bird.vy * 0.03));
+  ctx.translate(x + width / 2, y + height / 2);
+  ctx.rotate(angle);
+
+  // ---------- CUERPO ROJO (tipo Angry Bird, redondito) ----------
+  ctx.fillStyle = "#d62828"; // rojo más intenso
   ctx.beginPath();
-  ctx.ellipse(x+width/2, y+height/2, width/2, height/2, 0,0,Math.PI*2);
+  ctx.ellipse(0, 0, width / 2 + 2, height / 2 + 4, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // plumas verde chillón
+  // ---------- PANZA BLANCA ----------
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.ellipse(0, height * 0.15, width / 2.1, height / 2.4, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ---------- COPITO DE PLUMAS EN LA CABEZA ----------
+  ctx.fillStyle = "#b21f2b";
+  ctx.beginPath();
+  ctx.moveTo(-4, -height / 2 - 2);
+  ctx.lineTo(2, -height / 2 - 8);
+  ctx.lineTo(8, -height / 2 - 2);
+  ctx.closePath();
+  ctx.fill();
+
+  // ---------- COLA NEGRA ----------
+  ctx.fillStyle = "#111111";
+  ctx.beginPath();
+  ctx.moveTo(-width / 2 - 6, 4);
+  ctx.lineTo(-width / 2 - 1, -2);
+  ctx.lineTo(-width / 2 + 3, 6);
+  ctx.closePath();
+  ctx.fill();
+
+  // Detalle verde chillón en la cola (guiño a tu idea original)
   ctx.fillStyle = "#00ff55";
   ctx.beginPath();
-  ctx.ellipse(x+width*0.25, y+height*0.35, 4,8, -0.5, 0,Math.PI*2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(x+width*0.25, y+height*0.65, 4,8, 0.5, 0,Math.PI*2);
+  ctx.moveTo(-width / 2 - 2, 2);
+  ctx.lineTo(-width / 2 - 8, -2);
+  ctx.lineTo(-width / 2 - 4, 6);
+  ctx.closePath();
   ctx.fill();
 
-  // pico amarillo
+  // ---------- PICO AMARILLO TRIANGULAR ----------
   ctx.fillStyle = "#ffd52e";
   ctx.beginPath();
-  ctx.moveTo(x+width, y+height/2);
-  ctx.lineTo(x+width+8, y+height/2-4);
-  ctx.lineTo(x+width+8, y+height/2+4);
+  ctx.moveTo(width / 2 + 2, 0);
+  ctx.lineTo(width / 2 + 10, -4);
+  ctx.lineTo(width / 2 + 10, 4);
+  ctx.closePath();
   ctx.fill();
 
-  // cola verde
-  ctx.fillStyle = "#10b981";
+  // ---------- OJO + CEJA ----------
+  const eyeX = width * 0.15;
+  const eyeY = -height * 0.15;
+
+  // ojo blanco
+  ctx.fillStyle = "#ffffff";
   ctx.beginPath();
-  ctx.moveTo(x, y+height/2);
-  ctx.lineTo(x-10, y+height/2-6);
-  ctx.lineTo(x-10, y+height/2+6);
+  ctx.arc(eyeX, eyeY, 4.5, 0, Math.PI * 2);
   ctx.fill();
 
-  // ojo
-  ctx.fillStyle = "white";
+  // pupila negra
+  ctx.fillStyle = "#000000";
   ctx.beginPath();
-  ctx.arc(x+width*0.55, y+height*0.35, 4, 0,Math.PI*2);
+  ctx.arc(eyeX + 1, eyeY + 0.5, 2.1, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "black";
-  ctx.beginPath();
-  ctx.arc(x+width*0.57, y+height*0.35, 2, 0,Math.PI*2);
-  ctx.fill();
+
+  // ceja oscura (le da cara de “seria”)
+  ctx.fillStyle = "#111111";
+  ctx.save();
+  ctx.translate(eyeX - 3, eyeY - 5);
+  ctx.rotate(-0.2);
+  ctx.fillRect(0, 0, 10, 2.5);
+  ctx.restore();
+
+  ctx.restore();
 }
+
 
 function drawObstacles() {
   ctx.fillStyle = "#0f766e";
