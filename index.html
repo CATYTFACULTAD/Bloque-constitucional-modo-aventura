@@ -603,33 +603,37 @@
     }
 
     function checkCollisions() {
-      if (bird.y < 0 || bird.y + bird.height > canvas.height) {
-        askQuestion();
-        return;
-      }
+  // Colisión con piso/techo
+  if (bird.y < -10 || bird.y + bird.height > canvas.height - 20) {
+    askQuestion();
+    return;
+  }
 
-      for (const o of obstacles) {
-        const topH = o.gapY - o.gapHeight / 2;
-        const bottomY = o.gapY + o.gapHeight / 2;
+  for (const o of obstacles) {
+    const bx1 = bird.x;
+    const bx2 = bird.x + bird.width;
+    const by1 = bird.y;
+    const by2 = bird.y + bird.height;
 
-        const bx1 = bird.x;
-        const bx2 = bird.x + bird.width;
-        const by1 = bird.y;
-        const by2 = bird.y + bird.height;
+    const ox1 = o.x + 10;           // achicamos el hitbox
+    const ox2 = o.x + o.width - 10; // por ambos lados
 
-        const ox1 = o.x;
-        const ox2 = o.x + o.width;
+    const overlapX = bx2 > ox1 && bx1 < ox2;
 
-        const overlapX = bx2 > ox1 && bx1 < ox2;
-        const hitsTop = by1 < topH;
-        const hitsBottom = by2 > bottomY;
+    // achicar mucho altura de colisión
+    const bladeTopEnd = o.gapY - o.gapHeight / 2 + 35;
+    const bladeBottomStart = o.gapY + o.gapHeight / 2 - 35;
 
-        if (overlapX && (hitsTop || hitsBottom)) {
-          askQuestion();
-          return;
-        }
-      }
+    const hitsTop = by1 < bladeTopEnd;
+    const hitsBottom = by2 > bladeBottomStart;
+
+    if (overlapX && (hitsTop || hitsBottom)) {
+      askQuestion();
+      return;
     }
+  }
+}
+
 
     function drawBackground() {
       ctx.fillStyle = "#63c368";
