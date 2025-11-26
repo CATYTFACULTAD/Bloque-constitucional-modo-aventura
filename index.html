@@ -691,7 +691,41 @@ function draw() {
   drawBackground();
   drawObstacles();
   drawBird();
+function drawSickleObstacle(o, isTop) {
+  ctx.save();
+
+  const centerX = o.x + o.width / 2;
+
+  if (isTop) {
+    // Obstáculo de arriba
+    ctx.translate(centerX, o.gapY - o.gapHeight / 2);
+  } else {
+    // Obstáculo de abajo
+    ctx.translate(centerX, o.gapY + o.gapHeight / 2);
+    ctx.scale(1, -1); // lo espejamos verticalmente
+  }
+
+  // Mango
+  ctx.fillStyle = "#8b5a2b";
+  ctx.fillRect(-6, 0, 12, 60);
+
+  // Hoz (blade)
+  ctx.beginPath();
+  ctx.lineWidth = 7;
+  ctx.strokeStyle = "#dddddd";
+  ctx.arc(0, 0, 40, Math.PI * 0.1, Math.PI * 1.2, false);
+  ctx.stroke();
+
+  // Borde rojo (detalle ideológico 😅)
+  ctx.beginPath();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#d62828";
+  ctx.arc(0, 0, 40, Math.PI * 0.3, Math.PI * 1.0, false);
+  ctx.stroke();
+
+  ctx.restore();
 }
+
 
 function loop() {
   if (gameState === "playing") {
