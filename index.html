@@ -262,11 +262,12 @@ const questionsPool = [
 // AUDIO + FADES
 //////////////////////////////
 
+// ⚠️ Si tu archivo es MP3, cambiá a "./flappy_flying_deep.mp3"
 const musicGame = new Audio("./flappy_flying_deep.wav");
 musicGame.loop = true;
 let musicStarted = false;
 let musicEnabled = true;
-const musicBaseVolume = 0.5;  // volumen normal
+const musicBaseVolume = 0.10;   // volumen más bajito aún
 
 const sfxFlap  = new Audio("./sfx_flap_soft.wav");
 sfxFlap.volume = 0.8;
@@ -304,7 +305,6 @@ function fadeMusicTo(targetVolume, durationMs = 600, pauseAtEnd = false) {
   fadeAnimationId = requestAnimationFrame(step);
 }
 
-// se llama cuando el usuario hace clic (Start, flap, test sonido...)
 function ensureMusicPlaying() {
   if (!musicEnabled) return;
 
@@ -315,7 +315,7 @@ function ensureMusicPlaying() {
     musicGame.play().then(() => {
       fadeMusicTo(musicBaseVolume, 800);
     }).catch(() => {
-      console.log("El navegador bloqueó la reproducción automática.");
+      console.log("Autoplay bloqueado.");
     });
   } else if (musicGame.paused) {
     musicGame.volume = 0;
@@ -354,6 +354,12 @@ let frameCount = 0;
 let obstacles = [];
 let score = 0;
 
+// niveles
+let level = 1;
+let isCelebrating = false;
+let celebrationTimer = 0;
+let celebrationBaseY = 0;
+
 let usedQuestionIndices = new Set();
 let currentQuestionIndex = null;
 
@@ -389,6 +395,11 @@ function resetRunKeepQuestions() {
   bird.y = canvas.height / 2;
   bird.vy = 0;
 
+  level = 1;
+  isCelebrating = false;
+  celebrationTimer = 0;
+  celebrationBaseY = bird.y;
+
   scoreLabel.textContent = "Puntos: 0";
 }
 
@@ -400,8 +411,6 @@ function goToMenu() {
   hud.style.display = "none";
   menu.style.display = "flex";
   difficultyLabel.textContent = "Dificultad: -";
-
-  // la música NO se apaga sola; queda como esté según el botón ON/OFF
   draw();
 }
 
@@ -431,7 +440,7 @@ function askQuestion() {
     return;
   }
 
-  currentQuestionIndex = available[Math.floor(Math.random()*available.length)];
+  currentQuestionIndex = available[Math.floor(Math.random() * available.length)];
   usedQuestionIndices.add(currentQuestionIndex);
 
   const q = questionsPool[currentQuestionIndex];
@@ -446,13 +455,17 @@ function askQuestion() {
     }
   });
 
-  try { sfxHit.currentTime = 0; sfxHit.play(); } catch(e) {}
+  try {
+    sfxHit.currentTime = 0;
+    sfxHit.play();
+  } catch (e) {}
 
   questionBox.style.display = "flex";
-gameState = "question";
+  gameState = "question";
 
-fadeMusicTo(0.05, 500);   // 🟢 bajar música mientras se contesta
-
+  if (musicEnabled && musicStarted) {
+    fadeMusicTo(0.05, 600);
+  }
 }
 
 function handleAnswer(selectedIndex) {
@@ -466,6 +479,10 @@ function handleAnswer(selectedIndex) {
     resetRunKeepQuestions();
     gameState = "playing";
     hud.style.display = "flex";
+
+    if (musicEnabled && musicStarted) {
+      fadeMusicTo(musicBaseVolume, 600);
+    }
 
     loop();
   } else {
@@ -481,22 +498,56 @@ function flap() {
     try {
       sfxFlap.currentTime = 0;
       sfxFlap.play();
-    } catch(e) {}
+    } catch (e) {}
   }
 }
 
 function spawnObstacle() {
   const gh = currentDifficulty.gapHeight;
   const margin = 40;
-  const centerY = margin + gh/2 + Math.random()*(canvas.height - 2*margin - gh);
+  const centerY = margin + gh / 2 + Math.random() * (canvas.height - 2 * margin - gh);
 
   obstacles.push({
     x: canvas.width + 20,
     width: 50,
     gapY: centerY,
     gapHeight: gh,
-    passed:false
+    passed: false
   });
+}
+
+function checkLevelUp() {
+  // Nivel 1 -> Nivel 2 (Fácil -> Medio) al llegar a 15 puntos (solo si empezó en Fácil)
+  if (currentDifficultyKey === "facil" && level === 1 && score >= 15 && !isCelebrating) {
+    level = 2;
+    isCelebrating = true;
+    celebrationTimer = 0;
+    celebrationBaseY = bird.y;
+    obstacles = [];
+    bird.vy = 0;
+
+    alert("¡Felicitaciones! Pasaste al Nivel 2 (Medio) 🎉");
+
+    gameState = "celebration";
+    loop();
+    return;
+  }
+
+  // Nivel 2 -> Nivel 3 (Medio -> Difícil) al llegar a 30 puntos (viniendo del nivel 1)
+  if (level === 2 && score >= 30 && !isCelebrating) {
+    level = 3;
+    isCelebrating = true;
+    celebrationTimer = 0;
+    celebrationBaseY = bird.y;
+    obstacles = [];
+    bird.vy = 0;
+
+    alert("¡Nivel Máximo! Ahora jugás en Difícil 💥");
+
+    gameState = "celebration";
+    loop();
+    return;
+  }
 }
 
 function updateObstacles() {
@@ -513,7 +564,9 @@ function updateObstacles() {
       try {
         sfxScore.currentTime = 0;
         sfxScore.play();
-      } catch(e) {}
+      } catch (e) {}
+
+      checkLevelUp();
     }
   });
 
@@ -529,8 +582,8 @@ function checkCollisions() {
   }
 
   for (const o of obstacles) {
-    const topH = o.gapY - o.gapHeight/2;
-    const bottomY = o.gapY + o.gapHeight/2;
+    const topH = o.gapY - o.gapHeight / 2;
+    const bottomY = o.gapY + o.gapHeight / 2;
 
     const bx1 = bird.x;
     const bx2 = bird.x + bird.width;
@@ -553,7 +606,7 @@ function checkCollisions() {
 
 function drawBackground() {
   ctx.fillStyle = "#63c368";
-  ctx.fillRect(0, canvas.height-28, canvas.width, 28);
+  ctx.fillRect(0, canvas.height - 28, canvas.width, 28);
 }
 
 function drawBird() {
@@ -561,24 +614,20 @@ function drawBird() {
 
   ctx.save();
 
-  // Un poquito de rotación según la velocidad (da sensación de movimiento)
   const angle = Math.max(-0.4, Math.min(0.4, bird.vy * 0.03));
   ctx.translate(x + width / 2, y + height / 2);
   ctx.rotate(angle);
 
-  // ---------- CUERPO ROJO (tipo Angry Bird, redondito) ----------
-  ctx.fillStyle = "#d62828"; // rojo más intenso
+  ctx.fillStyle = "#d62828";
   ctx.beginPath();
   ctx.ellipse(0, 0, width / 2 + 2, height / 2 + 4, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // ---------- PANZA BLANCA ----------
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
   ctx.ellipse(0, height * 0.15, width / 2.1, height / 2.4, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // ---------- COPITO DE PLUMAS EN LA CABEZA ----------
   ctx.fillStyle = "#b21f2b";
   ctx.beginPath();
   ctx.moveTo(-4, -height / 2 - 2);
@@ -587,7 +636,6 @@ function drawBird() {
   ctx.closePath();
   ctx.fill();
 
-  // ---------- COLA NEGRA ----------
   ctx.fillStyle = "#111111";
   ctx.beginPath();
   ctx.moveTo(-width / 2 - 6, 4);
@@ -596,7 +644,6 @@ function drawBird() {
   ctx.closePath();
   ctx.fill();
 
-  // Detalle verde chillón en la cola (guiño a tu idea original)
   ctx.fillStyle = "#00ff55";
   ctx.beginPath();
   ctx.moveTo(-width / 2 - 2, 2);
@@ -605,7 +652,6 @@ function drawBird() {
   ctx.closePath();
   ctx.fill();
 
-  // ---------- PICO AMARILLO TRIANGULAR ----------
   ctx.fillStyle = "#ffd52e";
   ctx.beginPath();
   ctx.moveTo(width / 2 + 2, 0);
@@ -614,23 +660,19 @@ function drawBird() {
   ctx.closePath();
   ctx.fill();
 
-  // ---------- OJO + CEJA ----------
   const eyeX = width * 0.15;
   const eyeY = -height * 0.15;
 
-  // ojo blanco
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
   ctx.arc(eyeX, eyeY, 4.5, 0, Math.PI * 2);
   ctx.fill();
 
-  // pupila negra
   ctx.fillStyle = "#000000";
   ctx.beginPath();
   ctx.arc(eyeX + 1, eyeY + 0.5, 2.1, 0, Math.PI * 2);
   ctx.fill();
 
-  // ceja oscura (le da cara de “seria”)
   ctx.fillStyle = "#111111";
   ctx.save();
   ctx.translate(eyeX - 3, eyeY - 5);
@@ -641,37 +683,62 @@ function drawBird() {
   ctx.restore();
 }
 
-
 function drawObstacles() {
   ctx.fillStyle = "#0f766e";
   for (const o of obstacles) {
-    const topH = o.gapY - o.gapHeight/2;
-    const bottomY = o.gapY + o.gapHeight/2;
+    const topH = o.gapY - o.gapHeight / 2;
+    const bottomY = o.gapY + o.gapHeight / 2;
 
     ctx.fillRect(o.x, 0, o.width, topH);
-    ctx.fillRect(o.x, bottomY, o.width, canvas.height-bottomY);
+    ctx.fillRect(o.x, bottomY, o.width, canvas.height - bottomY);
   }
 }
 
 function draw() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBackground();
   drawObstacles();
   drawBird();
 }
 
 function loop() {
-  if (gameState !== "playing") { draw(); return; }
+  if (gameState === "playing") {
+    frameCount++;
+    bird.vy += gravity;
+    bird.y += bird.vy;
+    updateObstacles();
+    checkCollisions();
+  } else if (gameState === "celebration") {
+    celebrationTimer++;
+    bird.vy = 0;
+    bird.y = celebrationBaseY + Math.sin(celebrationTimer * 0.3) * 10;
 
-  frameCount++;
-  bird.vy += gravity;
-  bird.y += bird.vy;
+    if (celebrationTimer > 120) { // ~2 segundos de baile
+      isCelebrating = false;
+      gameState = "playing";
+      frameCount = 0;
+      obstacles = [];
+      bird.vy = 0;
 
-  updateObstacles();
-  checkCollisions();
+      if (level === 2) {
+        currentDifficultyKey = "medio";
+        currentDifficulty = difficultyConfig["medio"];
+      } else if (level === 3) {
+        currentDifficultyKey = "dificil";
+        currentDifficulty = difficultyConfig["dificil"];
+      }
+
+      if (musicEnabled && musicStarted) {
+        fadeMusicTo(musicBaseVolume, 500);
+      }
+    }
+  }
+
   draw();
 
-  requestAnimationFrame(loop);
+  if (gameState === "playing" || gameState === "celebration") {
+    requestAnimationFrame(loop);
+  }
 }
 
 //////////////////////////////
@@ -699,7 +766,10 @@ window.addEventListener("keydown", e => {
 });
 
 canvas.addEventListener("mousedown", flap);
-canvas.addEventListener("touchstart", e => { e.preventDefault(); flap(); }, {passive:false});
+canvas.addEventListener("touchstart", e => {
+  e.preventDefault();
+  flap();
+}, { passive: false });
 
 //////////////////////////////
 // EVENTOS: música
@@ -714,22 +784,20 @@ musicToggleBtn.addEventListener("click", () => {
   updateMusicToggleLabel();
 
   if (musicEnabled) {
-    ensureMusicPlaying();        // fade in automático
+    ensureMusicPlaying();
   } else if (musicStarted) {
-    fadeMusicTo(0, 800, true);   // fade out suave y pausa
+    fadeMusicTo(0, 800, true);
   }
 });
 
-// Botón para probar que el audio carga
 testSoundBtn.addEventListener("click", () => {
   ensureMusicPlaying();
   try {
     sfxScore.currentTime = 0;
     sfxScore.play();
-  } catch(e) {}
+  } catch (e) {}
 });
 
-// iniciar dibujo estático
 updateMusicToggleLabel();
 draw();
 </script>
