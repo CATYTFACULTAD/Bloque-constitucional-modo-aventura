@@ -346,6 +346,8 @@
     let usedQuestionIndices = new Set();
     let currentQuestionIndex = null;
 
+    let wingPhase = 0; // para animar las alas
+
     const gravity = 0.35;
     const jumpStrength = -6.8;
 
@@ -494,20 +496,21 @@
     /******************************************
      * 8) OBSTÁCULOS CON DECORACIÓN COMUNISTA
      ******************************************/
-    function spawnObstacle() {
-      const gap = currentDifficulty.gap;
-      const margin = 60;
-      const centerY =
-        margin + gap/2 + Math.random() * (canvas.height - 2*margin - gap);
+function spawnObstacle() {
+  const gap = currentDifficulty.gap;
+  const margin = 60;
+  const centerY =
+    margin + gap/2 + Math.random() * (canvas.height - 2*margin - gap);
 
-      obstacles.push({
-        x: canvas.width + 40,
-        width: 70,
-        gapY: centerY,
-        gapHeight: gap,
-        passed: false
-      });
-    }
+  obstacles.push({
+    x: canvas.width + 40,
+    width: 70,
+    gapY: centerY,
+    gapHeight: gap,
+    passed: false,
+    style: Math.random() < 0.5 ? "comunista" : "anarquista"   // 🔥 nuevo
+  });
+}
 
     function drawCommunistDecor(x, y, w, h) {
       ctx.save();
@@ -531,23 +534,55 @@
 
       ctx.restore();
     }
+    
+function drawAnarchistDecor(x, y, w, h) {
+  ctx.save();
+  ctx.translate(x + w/2, y + h/2);
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 6;
 
-    function drawObstacles() {
-      ctx.fillStyle = "#0f766e";
+  // Círculo grande
+  ctx.beginPath();
+  ctx.arc(0, 0, 22, 0, Math.PI * 2);
+  ctx.stroke();
 
-      for (const o of obstacles) {
-        const topH = o.gapY - o.gapHeight/2;
-        const bottomY = o.gapY + o.gapHeight/2;
+  // Letra A
+  ctx.beginPath();
+  ctx.moveTo(0, -18);
+  ctx.lineTo(-12, 18);
+  ctx.lineTo(12, 18);
+  ctx.closePath();
+  ctx.stroke();
 
-        // tubo arriba
-        ctx.fillRect(o.x, 0, o.width, topH);
-        drawCommunistDecor(o.x, topH - 50, o.width, 50);
+  // Línea central de la A
+  ctx.beginPath();
+  ctx.moveTo(-14, 0);
+  ctx.lineTo(14, 0);
+  ctx.stroke();
 
-        // tubo abajo
-        ctx.fillRect(o.x, bottomY, o.width, canvas.height - bottomY);
-        drawCommunistDecor(o.x, bottomY, o.width, 50);
-      }
+  ctx.restore();
+}
+
+   function drawObstacles() {
+  ctx.fillStyle = "#0f766e";
+
+  for (const o of obstacles) {
+    const topH = o.gapY - o.gapHeight/2;
+    const bottomY = o.gapY + o.gapHeight/2;
+
+    ctx.fillRect(o.x, 0, o.width, topH);
+    ctx.fillRect(o.x, bottomY, o.width, canvas.height - bottomY);
+
+    if (o.style === "comunista") {
+      drawCommunistDecor(o.x, topH - 50, o.width, 50);
+      drawCommunistDecor(o.x, bottomY, o.width, 50);
+    } else {
+      drawAnarchistDecor(o.x, topH - 50, o.width, 50);
+      drawAnarchistDecor(o.x, bottomY, o.width, 50);
     }
+  }
+}
+
 
     /******************************************
      * 9) COLISIONES PERFECTAS (rectángulos)
@@ -593,11 +628,27 @@
       ctx.translate(x + width/2, y + height/2);
       ctx.rotate(angle);
 
-      // Cuerpo rojo
-      ctx.fillStyle = "#d62828";
-      ctx.beginPath();
-      ctx.ellipse(0,0,width/2+2,height/2+4,0,0,Math.PI*2);
-      ctx.fill();
+// Cuerpo rojo flaco
+ctx.fillStyle = "#d62828";
+ctx.beginPath();
+ctx.ellipse(0, 0, (width/2) - 4, (height/2) + 2, 0, 0, Math.PI * 2);
+ctx.fill();
+
+// Alas / plumas laterales verdes animadas
+const wingOffset = Math.sin(wingPhase) * 4;  // suben y bajan
+
+ctx.fillStyle = "#00ff55";
+
+// Ala izquierda
+ctx.beginPath();
+ctx.ellipse(-width/2 + 4, wingOffset, 7, 13, 0, 0, Math.PI * 2);
+ctx.fill();
+
+// Ala derecha
+ctx.beginPath();
+ctx.ellipse(width/2 - 4, -wingOffset, 7, 13, 0, 0, Math.PI * 2);
+ctx.fill();
+
 
       // Panza
       ctx.fillStyle = "#ffffff";
@@ -680,51 +731,29 @@
     /******************************************
      * 12) LOOP
      ******************************************/
-    function loop() {
-      if (gameState === "playing") {
-        frameCount++;
-        bird.vy += gravity;
-        bird.y += bird.vy;
+  function loop() {
+  if (gameState === "playing") {
+    frameCount++;
+    wingPhase += 0.25;  // 👈 velocidad de aleteo
 
-        if (frameCount % currentDifficulty.spawn === 0) spawnObstacle();
+    bird.vy += gravity;
+    bird.y += bird.vy;
 
-        obstacles.forEach(o => {
-          o.x -= currentDifficulty.speed;
+    if (frameCount % currentDifficulty.spawn === 0) spawnObstacle();
 
-          if (!o.passed && o.x + o.width < bird.x) {
-            o.passed = true;
-            score++;
-            scoreLabel.textContent = "Puntos: " + score;
+    obstacles.forEach(o => {
+      o.x -= currentDifficulty.speed;
+      // ... (todo lo que ya tenías de puntos y niveles)
+    });
 
-            sfxScore.currentTime = 0;
-            sfxScore.play();
+    checkCollisions();
+  }
 
-            if (currentDifficultyKey==="facil" && level===1 && score>=15) {
-              level=2;
-              alert("✨ Pasaste al Nivel Medio ✨");
-              currentDifficultyKey="medio";
-              currentDifficulty=difficultyConfig["medio"];
-              obstacles=[];
-              frameCount=0;
-            }
-            if (level===2 && score>=30) {
-              level=3;
-              alert("🔥 Nivel Difícil activado 🔥");
-              currentDifficultyKey="dificil";
-              currentDifficulty=difficultyConfig["dificil"];
-              obstacles=[];
-              frameCount=0;
-            }
-          }
-        });
+  draw();
 
-        checkCollisions();
-      }
+  if (gameState === "playing") requestAnimationFrame(loop);
+}
 
-      draw();
-
-      if (gameState==="playing") requestAnimationFrame(loop);
-    }
 
     /******************************************
      * 13) EVENTOS DE MENÚ / MÚSICA
