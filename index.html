@@ -28,8 +28,6 @@
       background: linear-gradient(#7be0ff, #e0f8ff);
       border-radius: 14px;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-
-      /* tamaño visual grande */
       width: min(960px, 95vw);
       height: auto;
     }
@@ -114,11 +112,11 @@
     }
   </style>
 </head>
+
 <body>
   <h1>El Bloque Constitucional: Modo Aventura 🐦⚖️</h1>
 
   <div id="gameWrapper">
-    <!-- canvas interno grande -->
     <canvas id="gameCanvas" width="960" height="540"></canvas>
 
     <div id="hud">
@@ -126,7 +124,6 @@
       <span id="difficultyLabel">Dificultad: -</span>
     </div>
 
-    <!-- Caja de Preguntas -->
     <div id="questionBox">
       <div class="overlayCard">
         <h2>¡Ups! El pajarito chocó</h2>
@@ -159,119 +156,162 @@
   </div>
 
   <script>
-
-    /******************************************
-     * 1) PREGUNTAS
-     ******************************************/
+    /*****************************************************
+     * 1) PREGUNTAS - EXACTAS Y EN EL ORDEN QUE PEDISTE
+     *****************************************************/
     const questionsPool = [
-    { text:"El Bloque Constitucional Federal está compuesto por:", options:[
+      { text:"El Bloque Constitucional Federal está compuesto por:", options:[
         "Códigos de fondo y tratados sin jerarquía",
         "Constitución Nacional + Tratados de DDHH con jerarquía constitucional",
         "Leyes nacionales","Sentencias de la Corte IDH"], correctIndex:1 },
+
       { text:"La jerarquía normativa puede graficarse como:", options:[
         "Un triángulo","Una pirámide","Un trapecio","Un rectángulo"], correctIndex:2 },
+
       { text:"¿Qué característica distingue al Bloque Constitucional Federal?", options:[
         "Regula solo cuestiones civiles","Es la fuente jurídica más baja",
         "Goza de supremacía frente a normas inferiores","Solo se aplica a casos penales"], correctIndex:2 },
+
       { text:"Los tratados internacionales con jerarquía constitucional fueron incorporados principalmente en:",
         options:["Reforma de 1957","Reforma de 1994","Reforma de 1860","Reforma de 2001"], correctIndex:1 },
+
       { text:"Las normas ubicadas en el nivel superior del sistema son generalmente:",
         options:["Detalladas","Breves y genéricas","Solo para el ejecutivo","Municipales"], correctIndex:1 },
+
       { text:"El control de constitucionalidad argentino es:",
         options:["Concentrado","Difuso","Legislativo","Realizado por la Comisión IDH"], correctIndex:1 },
+
       { text:"¿Quiénes pueden ejercer control de constitucionalidad?",
         options:["Solo la Corte Suprema","Solo jueces federales","Todos los jueces","Los legisladores"], correctIndex:2 },
+
       { text:"La función de no aplicar normas contrarias al Bloque Constitucional Federal es:",
         options:["Función legislativa","Función positiva","Función negativa o represiva","Función administrativa"], correctIndex:2 },
+
       { text:"El control de constitucionalidad tiene efectos:",
         options:["Erga omnes","Inter partes","Territoriales","Sobre todas las leyes"], correctIndex:1 },
+
       { text:"El caso Halabi constituye una excepción porque:",
         options:["No fue decidido por la Corte","Tuvo efecto colectivo","Invalidó tratados","Eliminó control"], correctIndex:1 },
+
       { text:"La Corte IDH señaló en Almonacid Arellano que:",
         options:["Los jueces pueden ignorar SIDH","Aplicar normas contrarias",
         "Una norma local contraria a la CADH es inconvencional","El DI no sirve"], correctIndex:2 },
+
       { text:"El control de convencionalidad puede ser:",
         options:["Solo a petición","Solo de oficio","A petición o de oficio","Al final del proceso"], correctIndex:2 },
+
       { text:"¿Qué art. de la Constitución provincial de Tucumán regula el control constitucional?",
         options:["Const. Tucumán art 10","CPC art 87","Ley 24.660","Ley 6315"], correctIndex:1 },
+
       { text:"Una diferencia entre Corte IDH y Comisión IDH es que:",
         options:["Ambas litigiosas","La Comisión resuelve","La Corte dicta sentencias obligatorias","La Corte recomienda"], correctIndex:2 },
+
       { text:"Según CSJN en Carranza Latrubesse, las recomendaciones de la Comisión IDH son:",
         options:["No vinculantes","Vinculantes"], correctIndex:0 },
+
       { text:"¿En el caso S.R.L., qué derecho reclamaba la accionante?",
         options:["Salidas","Trabajo","Estudiar carrera universitaria","Reducción"], correctIndex:2 },
+
       { text:"¿Qué tipo de acción presentó S.R.L.?",
         options:["Amparo","Casación","Habeas corpus correctivo","Queja"], correctIndex:2 },
+
       { text:"El único derecho del que está privada una persona condenada es:",
         options:["Educación","Salud","Libertad ambulatoria","Participación política"], correctIndex:2 },
+
       { text:"El paradigma adecuado para interpretar el caso de S.R.L. es el de:",
         options:["Seguridad","Orden público","Derechos Humanos","Prevención"], correctIndex:2 },
+
       { text:"En el caso S.R.L. la CSJT determinó que pedir informes al Servicio Penitenciario era:",
         options:["Siempre necesario","Prohibido",
         "No previsto y generaba demoras inconstitucionales","Irrelevante"], correctIndex:2 },
+
       { text:"La Ley nacional N° 26.206 establece que la educación en encierro:",
         options:["Puede limitarse","Requiere autorización",
         "No admite limitación por encierro","Depende del director"], correctIndex:2 },
+
       { text:"En el caso de S.R.L.el fundamento del derecho a estudiar según la CSJT está en:",
         options:["Fines de la pena","Reinserción","La Condición humana","Presupuesto"], correctIndex:2 },
+
       { text:"En el caso de S.R.L. la CSJT ordenó al juez de ejecución:",
         options:["Negar permisos","Nueva condena","Garantizar cursado y exámenes","Más informes"], correctIndex:2 },
+
       { text:"En el caso de S.R.L. el principal obstáculo al ejericico del derecho fue:",
         options:["El transporte","La demora por informes penitenciarios","El cupo","La conducta"], correctIndex:1 },
+
       { text:"La Educación en personas privadas de libertad está protegida por:",
         options:["Reglamentos","Constitución y tratados","Decretos","Informes"], correctIndex:1 },
+
       { text:"En el caso M.I.M. de L.P. y G.F.J. la jueza respecto del art. 562 CCyC declaró su:",
         options:["Constitucionalidad","Inconstitucionalidad e inconvencionalidad parcial",
         "Inaplicabilidad","Derogación"], correctIndex:1 },
+
       { text:"En el caso M.I.M. de L.P. y G.F.J. los peticionantes usaban Gestación por Sustitución por:",
         options:["Cuestiones Laborales","Patologías que hacían inviable el embarazo","Prohibición","Era más económico"], correctIndex:1 },
+
       { text:"En el caso M.I.M. de L.P. y G.F.J. la jueza fundamentó su posición en:",
         options:["Adm","Penal","Familia + salud reproductiva","Comercial"], correctIndex:2 },
+
       { text:"En el caso M.I.M. de L.P. y G.F.J. la filiación se determinó por:",
         options:["Gestante","Voluntad procreacional + genética","Registro civil","Plazos"], correctIndex:1 },
+
       { text:"En el caso M.I.M. de L.P. y G.F.J. la jueza destacó:",
         options:["Neutralidad","Interés superior del niño","Reserva de ley","Orden público"], correctIndex:1 },
+
       { text:"La gestación por sustitución no fue regulada porque:",
         options:["No existía","Requería debate interdisciplinario profundo","Era ilegal","No había casos"], correctIndex:1 },
+
       { text:"En el caso M.I.M. de L.P. y G.F.J. la sentencia ordenó que el niño/a sea:",
         options:["Hijo de gestante","Sin filiación","Inscripto con apellidos genéticos","Adoptabilidad"], correctIndex:2 },
+
       { text:"En el caso M.I.M. de L.P. y G.F.J. la inconstitucionalidad fue:",
         options:["Total","Parcial","Errónea","Retroactiva"], correctIndex:1 },
+
       { text:"Cuál de los siguientes fallos es un conocido Leading case estadounidense?:",
         options:["Plessy","Brown","Marbury","Miranda"], correctIndex:2 },
+
       { text:"El primer antecedente argentino en materia de control judicial de constitucionalidad es:",
         options:["Halabi","Sojo","Carranza","Acosta"], correctIndex:1 },
+
       { text:"El caso Sojo versaba sobre:",
         options:["Culto","Expresión + prisión por Diputados","Educación","Propiedad"], correctIndex:1 },
+
       { text:"Las Opiniones consultivas de la Corte IDH son:",
         options:["Obligatorias","Sin valor","Interpretaciones autorizadas","Disciplinarias"], correctIndex:2 },
-      { text:" Las Sentencias de Corte IDH que no involucran a Argentina son:",
+
+      { text:"Las Sentencias de Corte IDH que no involucran a Argentina son:",
         options:["Obligatorias","Doctrina","No citables","Modifican leyes"], correctIndex:1 },
+
       { text:"La Comisión IDH emite:",
         options:["Sentencias","Opiniones y recomendaciones","Órdenes","Decretos"], correctIndex:1 },
+
       { text:"El control de constitucionalidad evita que:",
         options:["El poder judicial legisle","Se apliquen normas contrarias al bloque constitucional federal","Analicen tratados","Congreso regule"], correctIndex:1 },
+
       { text:"El Paradigma de seguridad en el caso S.R.L.:",
         options:["Reconocía derecho","Supeditaba a informes y conducta","Eliminaba educación","Acceso inmediato"], correctIndex:1 },
+
       { text:"El trapecio constitucional representa:",
         options:["Niveles judiciales","Jerarquía normativa","Tipos de tratados","Proceso legislativo"], correctIndex:1 },
+
       { text:"EL caso S.R.L. es ejemplo de:",
         options:["Control correcto","Desconocimiento SIDH","Prohibición de estudiar"], correctIndex:0 },
+
       { text:"El Control judicial es un mecanismo:",
         options:["Adm","Legislativo","Interpoderes e intrapoder","Ejecutivo"], correctIndex:2 },
+
       { text:"En el caso del fallo sobre gestación por sustitución la jueza sostuvo que el Estado debe:",
         options:["Interferir","Obstaculizar","No interferir y permitir salud reproductiva","Limitar ciencia"], correctIndex:2 },
+
       { text:"La educación en cárceles debe ser:",
         options:["Restringida","Opcional","Sin discriminación","Decidida por director"], correctIndex:2 },
+
       { text:"En el caso M.I.M. de L.P. y G.F.J. la jueza se fundamentó en tratados como:",
         options:["Convención del Niño + CEDAW","Viena","Varsovia","Antártico"], correctIndex:0 },
-    
     ];
 
-
-    /******************************************
-     * 2) AUDIO (música SOLO en MENÚ)
-     ******************************************/
+    /*****************************************************
+     * 2) AUDIO - MÚSICA SOLO EN MENÚ
+     *****************************************************/
     const musicGame = new Audio("./flappy_flying_deep.wav");
     musicGame.loop = true;
     let musicStarted = false;
@@ -282,39 +322,52 @@
     const sfxScore = new Audio("./sfx_score_popup.wav");
     const sfxHit   = new Audio("./sfx_damage.wav");
 
-    function fadeMusicTo(vol, time = 600, stop = false) {
+    let fadeAnimationId = null;
+    function fadeMusicTo(targetVolume, durationMs = 600, pauseAtEnd = false) {
       if (!musicStarted) return;
-      let start = musicGame.volume;
-      let delta = vol - start;
-      let t0 = performance.now();
+      if (fadeAnimationId) cancelAnimationFrame(fadeAnimationId);
 
-      function anim(t) {
-        let p = Math.min(1, (t - t0) / time);
-        musicGame.volume = start + delta * p;
-        if (p < 1) requestAnimationFrame(anim);
-        else if (stop && vol === 0) musicGame.pause();
+      const startVolume = musicGame.volume;
+      const delta = targetVolume - startVolume;
+      const startTime = performance.now();
+
+      function step(now) {
+        const t = Math.min(1, (now - startTime) / durationMs);
+        musicGame.volume = startVolume + delta * t;
+
+        if (t < 1) {
+          fadeAnimationId = requestAnimationFrame(step);
+        } else {
+          fadeAnimationId = null;
+          if (pauseAtEnd && targetVolume === 0) musicGame.pause();
+        }
       }
-      requestAnimationFrame(anim);
+      fadeAnimationId = requestAnimationFrame(step);
     }
 
     function ensureMenuMusic() {
       if (!musicEnabled) return;
+
       if (!musicStarted) {
         musicStarted = true;
         musicGame.currentTime = 0;
         musicGame.volume = 0;
-        musicGame.play().then(() => fadeMusicTo(musicBaseVolume, 800));
+        musicGame.play().then(() => {
+          fadeMusicTo(musicBaseVolume, 800);
+        }).catch(() => {});
       } else if (musicGame.paused) {
         musicGame.volume = 0;
-        musicGame.play().then(() => fadeMusicTo(musicBaseVolume, 800));
+        musicGame.play().then(() => {
+          fadeMusicTo(musicBaseVolume, 800);
+        }).catch(() => {});
       } else {
         fadeMusicTo(musicBaseVolume, 400);
       }
     }
 
-    /******************************************
-     * 3) VARIABLES DEL JUEGO
-     ******************************************/
+    /*****************************************************
+     * 3) VARIABLES PRINCIPALES
+     *****************************************************/
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
@@ -332,21 +385,17 @@
     const musicToggleBtn = document.getElementById("musicToggleBtn");
     const testSoundBtn   = document.getElementById("testSoundBtn");
 
-    let gameState = "menu";
+    let gameState = "menu"; // menu | playing | question
     let currentDifficultyKey = null;
+    let currentDifficulty = null;
 
     let frameCount = 0;
     let obstacles = [];
     let score = 0;
-
     let level = 1;
-    let isCelebrating = false;
-    let celebrationTimer = 0;
 
     let usedQuestionIndices = new Set();
     let currentQuestionIndex = null;
-
-    let wingPhase = 0; // para animar las alas
 
     const gravity = 0.35;
     const jumpStrength = -6.8;
@@ -364,21 +413,101 @@
       medio:  { label:"Medio",  speed:3.1, gap:125, spawn:120 },
       dificil:{ label:"Difícil",speed:3.9, gap:105, spawn:105 }
     };
-    let currentDifficulty = null;
 
-    /******************************************
-     * 4) RESET
-     ******************************************/
+    let wingPhase = 0; // para la animación de alas
+
+    /*****************************************************
+     * 4) FONDO: SOL + CONSTITUCIÓN
+     *****************************************************/
+    function drawSunWithConstitution() {
+      const cx = canvas.width - 120;
+      const cy = 80;
+      const radius = 50;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      // Rayos
+      ctx.strokeStyle = "#ffd93b";
+      ctx.lineWidth = 4;
+      for (let i = 0; i < 16; i++) {
+        const angle = (Math.PI * 2 * i) / 16;
+        const x1 = Math.cos(angle) * (radius + 6);
+        const y1 = Math.sin(angle) * (radius + 6);
+        const x2 = Math.cos(angle) * (radius + 18);
+        const y2 = Math.sin(angle) * (radius + 18);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+
+      // Sol
+      ctx.fillStyle = "#ffea3d";
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Librito de la Constitución
+      const bookW = 40;
+      const bookH = 32;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#1b1b1b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.rect(-bookW / 2, -bookH / 2, bookW, bookH);
+      ctx.fill();
+      ctx.stroke();
+
+      // Lomo celeste
+      ctx.fillStyle = "#4dabff";
+      ctx.fillRect(-bookW / 2, -bookH / 2, 8, bookH);
+
+      // Líneas tipo páginas
+      ctx.strokeStyle = "#cccccc";
+      ctx.lineWidth = 1;
+      for (let i = -bookH / 2 + 6; i < bookH / 2 - 4; i += 5) {
+        ctx.beginPath();
+        ctx.moveTo(-bookW / 2 + 10, i);
+        ctx.lineTo(bookW / 2 - 4, i);
+        ctx.stroke();
+      }
+
+      // Letras "CN"
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 12px system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("CN", 5, 0);
+
+      ctx.restore();
+    }
+
+    function drawBackground() {
+      ctx.fillStyle = "#7be0ff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      drawSunWithConstitution();
+
+      ctx.fillStyle = "#63c368";
+      ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+    }
+
+    /*****************************************************
+     * 5) RESET & MENÚ
+     *****************************************************/
     function fullReset() {
       score = 0;
       frameCount = 0;
       obstacles = [];
       usedQuestionIndices.clear();
+      level = 1;
+
       bird.x = canvas.width * 0.15;
       bird.y = canvas.height * 0.5;
       bird.vy = 0;
-      level = 1;
-      celebrationTimer = 0;
+
       scoreLabel.textContent = "Puntos: 0";
     }
 
@@ -390,9 +519,6 @@
       bird.vy = 0;
     }
 
-    /******************************************
-     * 5) MENÚ & GAME START
-     ******************************************/
     function goToMenu() {
       gameState = "menu";
       fullReset();
@@ -410,29 +536,28 @@
       currentDifficulty = difficultyConfig[diffKey];
 
       fullReset();
-
       hud.style.display = "flex";
       menu.style.display = "none";
 
-      // apagar música del menú
-      if (musicStarted) fadeMusicTo(0, 700, true);
+      if (musicStarted) {
+        fadeMusicTo(0, 700, true);
+      }
 
       difficultyLabel.textContent = "Dificultad: " + currentDifficulty.label;
-
       gameState = "playing";
       loop();
     }
 
-    /******************************************
+    /*****************************************************
      * 6) PREGUNTAS
-     ******************************************/
+     *****************************************************/
     function askQuestion() {
       const available = [...questionsPool.keys()].filter(
         i => !usedQuestionIndices.has(i)
       );
 
       if (available.length === 0) {
-        alert("¡Respondiste todo! 🎉");
+        alert("¡Respondiste todas las preguntas! 🎉");
         goToMenu();
         return;
       }
@@ -445,7 +570,8 @@
       questionText.textContent = q.text;
 
       optionButtons.forEach((btn, i) => {
-        btn.textContent = q.options[i];
+        btn.textContent = q.options[i] ?? "";
+        btn.style.display = q.options[i] ? "block" : "none";
       });
 
       sfxHit.currentTime = 0;
@@ -457,21 +583,23 @@
 
     function handleAnswer(idx) {
       const q = questionsPool[currentQuestionIndex];
+      if (!q) return;
+
       if (idx === q.correctIndex) {
         questionBox.style.display = "none";
-        alert("¡Correcto! 🐦✨");
+        alert("¡Respuesta correcta! 🐦✨");
         softResetAfterQuestion();
         gameState = "playing";
         loop();
       } else {
-        alert("Incorrecto 💥");
+        alert("Respuesta incorrecta 💥");
         goToMenu();
       }
     }
 
-    /******************************************
+    /*****************************************************
      * 7) INPUT
-     ******************************************/
+     *****************************************************/
     function flap() {
       if (gameState === "playing") {
         bird.vy = jumpStrength;
@@ -493,24 +621,24 @@
       flap();
     }, { passive:false });
 
-    /******************************************
-     * 8) OBSTÁCULOS CON DECORACIÓN COMUNISTA
-     ******************************************/
-function spawnObstacle() {
-  const gap = currentDifficulty.gap;
-  const margin = 60;
-  const centerY =
-    margin + gap/2 + Math.random() * (canvas.height - 2*margin - gap);
+    /*****************************************************
+     * 8) OBSTÁCULOS (COMUNISTAS / ANARQUISTAS)
+     *****************************************************/
+    function spawnObstacle() {
+      const gap = currentDifficulty.gap;
+      const margin = 60;
+      const centerY =
+        margin + gap/2 + Math.random() * (canvas.height - 2*margin - gap);
 
-  obstacles.push({
-    x: canvas.width + 40,
-    width: 70,
-    gapY: centerY,
-    gapHeight: gap,
-    passed: false,
-    style: Math.random() < 0.5 ? "comunista" : "anarquista"   // 🔥 nuevo
-  });
-}
+      obstacles.push({
+        x: canvas.width + 40,
+        width: 70,
+        gapY: centerY,
+        gapHeight: gap,
+        passed: false,
+        style: Math.random() < 0.5 ? "comunista" : "anarquista"
+      });
+    }
 
     function drawCommunistDecor(x, y, w, h) {
       ctx.save();
@@ -534,59 +662,58 @@ function spawnObstacle() {
 
       ctx.restore();
     }
-    
-function drawAnarchistDecor(x, y, w, h) {
-  ctx.save();
-  ctx.translate(x + w/2, y + h/2);
-  ctx.strokeStyle = "#000000";
-  ctx.lineWidth = 6;
 
-  // Círculo grande
-  ctx.beginPath();
-  ctx.arc(0, 0, 22, 0, Math.PI * 2);
-  ctx.stroke();
+    function drawAnarchistDecor(x, y, w, h) {
+      ctx.save();
+      ctx.translate(x + w/2, y + h/2);
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 6;
 
-  // Letra A
-  ctx.beginPath();
-  ctx.moveTo(0, -18);
-  ctx.lineTo(-12, 18);
-  ctx.lineTo(12, 18);
-  ctx.closePath();
-  ctx.stroke();
+      // círculo
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.stroke();
 
-  // Línea central de la A
-  ctx.beginPath();
-  ctx.moveTo(-14, 0);
-  ctx.lineTo(14, 0);
-  ctx.stroke();
+      // A
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.lineTo(-12, 18);
+      ctx.lineTo(12, 18);
+      ctx.closePath();
+      ctx.stroke();
 
-  ctx.restore();
-}
+      ctx.beginPath();
+      ctx.moveTo(-14, 0);
+      ctx.lineTo(14, 0);
+      ctx.stroke();
 
-   function drawObstacles() {
-  ctx.fillStyle = "#0f766e";
-
-  for (const o of obstacles) {
-    const topH = o.gapY - o.gapHeight/2;
-    const bottomY = o.gapY + o.gapHeight/2;
-
-    ctx.fillRect(o.x, 0, o.width, topH);
-    ctx.fillRect(o.x, bottomY, o.width, canvas.height - bottomY);
-
-    if (o.style === "comunista") {
-      drawCommunistDecor(o.x, topH - 50, o.width, 50);
-      drawCommunistDecor(o.x, bottomY, o.width, 50);
-    } else {
-      drawAnarchistDecor(o.x, topH - 50, o.width, 50);
-      drawAnarchistDecor(o.x, bottomY, o.width, 50);
+      ctx.restore();
     }
-  }
-}
 
+    function drawObstacles() {
+      ctx.fillStyle = "#0f766e";
 
-    /******************************************
-     * 9) COLISIONES PERFECTAS (rectángulos)
-     ******************************************/
+      for (const o of obstacles) {
+        const topH = o.gapY - o.gapHeight/2;
+        const bottomY = o.gapY + o.gapHeight/2;
+
+        // tubos rectangulares (hitbox perfecto)
+        ctx.fillRect(o.x, 0, o.width, topH);
+        ctx.fillRect(o.x, bottomY, o.width, canvas.height - bottomY);
+
+        if (o.style === "comunista") {
+          drawCommunistDecor(o.x, topH - 50, o.width, 50);
+          drawCommunistDecor(o.x, bottomY, o.width, 50);
+        } else {
+          drawAnarchistDecor(o.x, topH - 50, o.width, 50);
+          drawAnarchistDecor(o.x, bottomY, o.width, 50);
+        }
+      }
+    }
+
+    /*****************************************************
+     * 9) COLISIONES
+     *****************************************************/
     function checkCollisions() {
       if (bird.y < 0 || bird.y + bird.height > canvas.height - 40) {
         askQuestion();
@@ -616,257 +743,172 @@ function drawAnarchistDecor(x, y, w, h) {
       }
     }
 
-    /******************************************
-     * 10) BIRD DRAW
-     ******************************************/
+    /*****************************************************
+     * 10) PÁJARO (FLACO + ALAS ANIMADAS)
+     *****************************************************/
     function drawBird() {
       const {x,y,width,height} = bird;
 
       ctx.save();
-      let angle = Math.max(-0.4, Math.min(0.4, bird.vy * 0.03));
-
+      const angle = Math.max(-0.4, Math.min(0.4, bird.vy * 0.03));
       ctx.translate(x + width/2, y + height/2);
       ctx.rotate(angle);
 
-// Cuerpo rojo flaco
-ctx.fillStyle = "#d62828";
-ctx.beginPath();
-ctx.ellipse(0, 0, (width/2) - 4, (height/2) + 2, 0, 0, Math.PI * 2);
-ctx.fill();
+      // Cuerpo rojo flaco
+      ctx.fillStyle = "#d62828";
+      ctx.beginPath();
+      ctx.ellipse(0, 0, (width/2) - 4, (height/2) + 2, 0, 0, Math.PI * 2);
+      ctx.fill();
 
-// Alas / plumas laterales verdes animadas
-const wingOffset = Math.sin(wingPhase) * 4;  // suben y bajan
+      // Alas / plumas verdes animadas
+      const wingOffset = Math.sin(wingPhase) * 4;
+      ctx.fillStyle = "#00ff55";
 
-ctx.fillStyle = "#00ff55";
+      // izquierda
+      ctx.beginPath();
+      ctx.ellipse(-width/2 + 4, wingOffset, 7, 13, 0, 0, Math.PI * 2);
+      ctx.fill();
 
-// Ala izquierda
-ctx.beginPath();
-ctx.ellipse(-width/2 + 4, wingOffset, 7, 13, 0, 0, Math.PI * 2);
-ctx.fill();
+      // derecha
+      ctx.beginPath();
+      ctx.ellipse(width/2 - 4, -wingOffset, 7, 13, 0, 0, Math.PI * 2);
+      ctx.fill();
 
-// Ala derecha
-ctx.beginPath();
-ctx.ellipse(width/2 - 4, -wingOffset, 7, 13, 0, 0, Math.PI * 2);
-ctx.fill();
-
-
-      // Panza
+      // panza blanca
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
-      ctx.ellipse(0,height*0.15,width/2.1,height/2.4,0,0,Math.PI*2);
+      ctx.ellipse(0, height * 0.15, width/2.1, height/2.4, 0, 0, Math.PI*2);
       ctx.fill();
 
-      // Copito
+      // copito
       ctx.fillStyle = "#b21f2b";
       ctx.beginPath();
-      ctx.moveTo(-4,-height/2-2);
-      ctx.lineTo(2,-height/2-8);
-      ctx.lineTo(8,-height/2-2);
+      ctx.moveTo(-4, -height/2 - 2);
+      ctx.lineTo(2, -height/2 - 8);
+      ctx.lineTo(8, -height/2 - 2);
       ctx.fill();
 
-      // Cola negra
+      // cola
       ctx.fillStyle = "#111";
       ctx.beginPath();
-      ctx.moveTo(-width/2-6,4);
-      ctx.lineTo(-width/2-1,-2);
-      ctx.lineTo(-width/2+3,6);
+      ctx.moveTo(-width/2 - 6, 4);
+      ctx.lineTo(-width/2 - 1, -2);
+      ctx.lineTo(-width/2 + 3, 6);
       ctx.fill();
 
-      // detalle verde
-      ctx.fillStyle = "#00ff55";
-      ctx.beginPath();
-      ctx.moveTo(-width/2-2,2);
-      ctx.lineTo(-width/2-8,-2);
-      ctx.lineTo(-width/2-4,6);
-      ctx.fill();
-
-      // Pico
+      // pico
       ctx.fillStyle = "#ffd52e";
       ctx.beginPath();
-      ctx.moveTo(width/2+2,0);
-      ctx.lineTo(width/2+12,-5);
-      ctx.lineTo(width/2+12,5);
+      ctx.moveTo(width/2 + 2, 0);
+      ctx.lineTo(width/2 + 12, -5);
+      ctx.lineTo(width/2 + 12, 5);
       ctx.fill();
 
-      // Ojo
-      const eyeX = width*0.15;
-      const eyeY = -height*0.15;
-
+      // ojo
+      const eyeX = width * 0.15;
+      const eyeY = -height * 0.15;
       ctx.fillStyle = "#fff";
       ctx.beginPath();
-      ctx.arc(eyeX,eyeY,4.8,0,Math.PI*2);
+      ctx.arc(eyeX, eyeY, 4.8, 0, Math.PI*2);
       ctx.fill();
 
       ctx.fillStyle = "#000";
       ctx.beginPath();
-      ctx.arc(eyeX+1,eyeY+0.5,2.2,0,Math.PI*2);
+      ctx.arc(eyeX+1, eyeY+0.5, 2.2, 0, Math.PI*2);
       ctx.fill();
 
       // ceja
       ctx.fillStyle = "#111";
       ctx.save();
-      ctx.translate(eyeX-3, eyeY-5);
+      ctx.translate(eyeX - 3, eyeY - 5);
       ctx.rotate(-0.2);
-      ctx.fillRect(0,0,11,2.5);
+      ctx.fillRect(0, 0, 11, 2.5);
       ctx.restore();
 
       ctx.restore();
     }
 
-    /******************************************
-     * 11) DIBUJO GENERAL
-     ******************************************/
-    
-    function drawSunWithConstitution() {
-  const cx = canvas.width - 120;  // posición X del sol (a la derecha arriba)
-  const cy = 80;                  // posición Y del sol
-  const radius = 50;
-
-  // Rayos
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.strokeStyle = "#ffd93b";
-  ctx.lineWidth = 4;
-
-  for (let i = 0; i < 16; i++) {
-    const angle = (Math.PI * 2 * i) / 16;
-    const x1 = Math.cos(angle) * (radius + 6);
-    const y1 = Math.sin(angle) * (radius + 6);
-    const x2 = Math.cos(angle) * (radius + 18);
-    const y2 = Math.sin(angle) * (radius + 18);
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-  }
-
-  // Círculo principal del sol
-  ctx.fillStyle = "#ffea3d";
-  ctx.beginPath();
-  ctx.arc(0, 0, radius, 0, Math.PI * 2);
-  ctx.fill();
-
-
-
-  // Librito de Constitución dentro del sol
-  const bookW = 40;
-  const bookH = 32;
-
-  ctx.fillStyle = "#ffffff";
-  ctx.strokeStyle = "#1b1b1b";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.rect(-bookW / 2, -bookH / 2, bookW, bookH);
-  ctx.fill();
-  ctx.stroke();
-
-  // Lomo celeste
-  ctx.fillStyle = "#4dabff";
-  ctx.fillRect(-bookW / 2, -bookH / 2, 8, bookH);
-
-  // Detalle de líneas tipo páginas
-  ctx.strokeStyle = "#cccccc";
-  ctx.lineWidth = 1;
-  for (let i = -bookH / 2 + 6; i < bookH / 2 - 4; i += 5) {
-    ctx.beginPath();
-    ctx.moveTo(-bookW / 2 + 10, i);
-    ctx.lineTo(bookW / 2 - 4, i);
-    ctx.stroke();
-  }
-
-  // Letras "CN"
-  ctx.fillStyle = "#000000";
-  ctx.font = "bold 12px system-ui";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("CN", 5, 0);
-
-  ctx.restore();
-}
-
-   function drawBackground() {
-  // cielo (por si queremos tapar cosas anteriores)
-  ctx.fillStyle = "#7be0ff";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // sol con librito de la Constitución
-  drawSunWithConstitution();
-
-  // piso / pasto
-  ctx.fillStyle = "#63c368";
-  ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
-}
-
-
+    /*****************************************************
+     * 11) DIBUJO GENERAL + LOOP
+     *****************************************************/
     function draw() {
-      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawBackground();
       drawObstacles();
       drawBird();
     }
 
-    /******************************************
-     * 12) LOOP
-     ******************************************/
-  function loop() {
-  if (gameState === "playing") {
-    frameCount++;
-    wingPhase += 0.25;  // 👈 velocidad de aleteo
+    function loop() {
+      if (gameState === "playing") {
+        frameCount++;
+        wingPhase += 0.25;
 
-    bird.vy += gravity;
-    bird.y += bird.vy;
+        bird.vy += gravity;
+        bird.y += bird.vy;
 
-    if (frameCount % currentDifficulty.spawn === 0) spawnObstacle();
+        if (frameCount % currentDifficulty.spawn === 0) {
+          spawnObstacle();
+        }
 
- obstacles.forEach(o => {
-  o.x -= currentDifficulty.speed;
+        obstacles.forEach(o => {
+          o.x -= currentDifficulty.speed;
 
-  // ⭐ SUMA PUNTOS CUANDO EL PÁJARO PASA EL TUBO ⭐
-  if (!o.passed && o.x + o.width < bird.x) {
-    o.passed = true;
-    score++;
-    scoreLabel.textContent = "Puntos: " + score;
+          // sumar puntos al pasar el tubo
+          if (!o.passed && o.x + o.width < bird.x) {
+            o.passed = true;
+            score++;
+            scoreLabel.textContent = "Puntos: " + score;
 
-    try {
-      sfxScore.currentTime = 0;
-      sfxScore.play();
-    } catch (e) {}
-  }
+            sfxScore.currentTime = 0;
+            sfxScore.play();
 
-  // ⭐ CAMBIO AUTOMÁTICO DE NIVEL ⭐
-  if (currentDifficultyKey==="facil" && level===1 && score>=15) {
-    level=2;
-    alert("✨ Pasaste al Nivel Medio ✨");
-    currentDifficultyKey="medio";
-    currentDifficulty=difficultyConfig["medio"];
-    obstacles=[];
-    frameCount=0;
-  }
-  if (level===2 && score>=30) {
-    level=3;
-    alert("🔥 Nivel Difícil activado 🔥");
-    currentDifficultyKey="dificil";
-    currentDifficulty=difficultyConfig["dificil"];
-    obstacles=[];
-    frameCount=0;
-  }
-});
+            // cambios de nivel
+            if (currentDifficultyKey === "facil" && level === 1 && score >= 15) {
+              level = 2;
+              alert("✨ Pasaste al Nivel Medio ✨");
+              currentDifficultyKey = "medio";
+              currentDifficulty = difficultyConfig["medio"];
+              obstacles = [];
+              frameCount = 0;
+            } else if (currentDifficultyKey === "medio" && level === 2 && score >= 30) {
+              level = 3;
+              alert("🔥 Nivel Difícil activado 🔥");
+              currentDifficultyKey = "dificil";
+              currentDifficulty = difficultyConfig["dificil"];
+              obstacles = [];
+              frameCount = 0;
+            }
+          }
+        });
 
-  draw();
+        checkCollisions();
+      }
 
-  if (gameState === "playing") requestAnimationFrame(loop);
-}
+      draw();
 
+      if (gameState === "playing") {
+        requestAnimationFrame(loop);
+      }
+    }
 
-    /******************************************
-     * 13) EVENTOS DE MENÚ / MÚSICA
-     ******************************************/
+    /*****************************************************
+     * 12) EVENTOS DE INTERFAZ / MÚSICA
+     *****************************************************/
+    function updateMusicToggleLabel() {
+      musicToggleBtn.textContent = musicEnabled
+        ? "🎵 Música: ON"
+        : "🎵 Música: OFF";
+    }
+
     musicToggleBtn.addEventListener("click", () => {
       musicEnabled = !musicEnabled;
-      musicToggleBtn.textContent = musicEnabled ? "🎵 Música: ON" : "🎵 Música: OFF";
+      updateMusicToggleLabel();
 
-      if (musicEnabled) ensureMenuMusic();
-      else fadeMusicTo(0, 800, true);
+      if (musicEnabled) {
+        ensureMenuMusic();
+      } else if (musicStarted) {
+        fadeMusicTo(0, 800, true);
+      }
     });
 
     testSoundBtn.addEventListener("click", () => {
@@ -877,20 +919,23 @@ ctx.fill();
 
     optionButtons.forEach(btn => {
       btn.addEventListener("click", () => {
-        handleAnswer(Number(btn.dataset.index));
+        const idx = Number(btn.dataset.index);
+        if (gameState === "question") handleAnswer(idx);
       });
     });
 
     menuButtons.forEach(btn => {
-      btn.addEventListener("click", () => startGame(btn.dataset.diff));
+      btn.addEventListener("click", () => {
+        startGame(btn.dataset.diff);
+      });
     });
 
-    /******************************************
-     * 14) ARRANQUE
-     ******************************************/
+    /*****************************************************
+     * 13) ARRANQUE
+     *****************************************************/
     draw();
+    updateMusicToggleLabel();
     ensureMenuMusic();
-
   </script>
 </body>
 </html>
