@@ -818,13 +818,39 @@ ctx.fill();
 
     if (frameCount % currentDifficulty.spawn === 0) spawnObstacle();
 
-    obstacles.forEach(o => {
-      o.x -= currentDifficulty.speed;
-      // ... (todo lo que ya tenías de puntos y niveles)
-    });
+ obstacles.forEach(o => {
+  o.x -= currentDifficulty.speed;
 
-    checkCollisions();
+  // ⭐ SUMA PUNTOS CUANDO EL PÁJARO PASA EL TUBO ⭐
+  if (!o.passed && o.x + o.width < bird.x) {
+    o.passed = true;
+    score++;
+    scoreLabel.textContent = "Puntos: " + score;
+
+    try {
+      sfxScore.currentTime = 0;
+      sfxScore.play();
+    } catch (e) {}
   }
+
+  // ⭐ CAMBIO AUTOMÁTICO DE NIVEL ⭐
+  if (currentDifficultyKey==="facil" && level===1 && score>=15) {
+    level=2;
+    alert("✨ Pasaste al Nivel Medio ✨");
+    currentDifficultyKey="medio";
+    currentDifficulty=difficultyConfig["medio"];
+    obstacles=[];
+    frameCount=0;
+  }
+  if (level===2 && score>=30) {
+    level=3;
+    alert("🔥 Nivel Difícil activado 🔥");
+    currentDifficultyKey="dificil";
+    currentDifficulty=difficultyConfig["dificil"];
+    obstacles=[];
+    frameCount=0;
+  }
+});
 
   draw();
 
