@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>El Bloque Constitucional: Modo Aventura 🐦⚖️</title>
+  <title>Teoría del Estado: Modo Aventura 🐦</title>
   <style>
     body {
       margin: 0;
@@ -45,13 +45,6 @@
       pointer-events: none;
     }
 
-    #menu {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
     #musicControls {
       margin-top: 6px;
       display: flex;
@@ -91,6 +84,19 @@
       width: 80%;
       max-width: 380px;
       box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+      transition: background-color 180ms ease, transform 180ms ease;
+    }
+
+    .optionBtn.correctAnswer {
+      background: #37b86b;
+      color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(55, 184, 107, 0.35);
+    }
+
+    .optionBtn.incorrectAnswer {
+      background: #d94a4a;
+      color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(217, 74, 74, 0.35);
     }
 
     .overlayCard h2 {
@@ -110,22 +116,131 @@
       opacity: 0.8;
       margin-top: 10px;
     }
+
+    #answerFeedback {
+      display: none;
+      margin: 12px 0 0;
+      font-size: 16px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    #resumeBox {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(11, 16, 32, 0.28);
+      pointer-events: auto;
+    }
+
+    #levelIntroBox,
+    #levelCompleteBox {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(11, 16, 32, 0.34);
+      pointer-events: auto;
+    }
+
+    #levelCompleteBox { display: none; }
+
+    .levelCard {
+      width: min(440px, 88%);
+      padding: 26px 22px;
+      border: 2px solid rgba(255,255,255,0.28);
+      border-radius: 22px;
+      background: rgba(10, 24, 45, 0.94);
+      text-align: center;
+      box-shadow: 0 14px 38px rgba(0,0,0,0.48);
+    }
+
+    .levelCard h2 {
+      margin: 0;
+      color: #ffe066;
+      font-size: clamp(30px, 5vw, 48px);
+      letter-spacing: 0.04em;
+    }
+
+    .levelName {
+      margin: 10px 0 20px;
+      font-size: clamp(17px, 2.6vw, 23px);
+      font-weight: 800;
+    }
+
+    .difficultyChoices {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 12px 0 18px;
+      flex-wrap: wrap;
+    }
+
+    .difficultyChoice.selected {
+      color: #fff;
+      background: #2878d0;
+      box-shadow: 0 0 0 3px rgba(77, 171, 255, 0.4);
+    }
+
+    #levelStartButton,
+    #backToLevelsButton {
+      padding: 13px 28px;
+      color: #fff;
+      background: #37b86b;
+      font-size: 19px;
+    }
+
+    .lockedLevel {
+      margin: 18px auto;
+      padding: 12px 16px;
+      border: 1px dashed rgba(255,255,255,0.4);
+      border-radius: 12px;
+      color: #cbd5e1;
+      background: rgba(255,255,255,0.06);
+    }
+
+    #resumeButton {
+      padding: 16px 28px;
+      font-size: 22px;
+      background: #37b86b;
+      color: #ffffff;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+    }
   </style>
 </head>
 
 <body>
-  <h1>El Bloque Constitucional: Modo Aventura 🐦⚖️</h1>
+  <h1>Teoría del Estado - Unidad 1: Modo Aventura 🐦</h1>
 
   <div id="gameWrapper">
     <canvas id="gameCanvas" width="960" height="540"></canvas>
 
     <div id="hud">
-      <span id="scoreLabel">Puntos: 0</span>
+      <span id="levelLabel">Nivel 1 · TEORÍA DEL ESTADO</span>
+      <span id="scoreLabel">Meta: 0/15</span>
       <span id="difficultyLabel">Dificultad: -</span>
     </div>
 
+    <div id="levelIntroBox">
+      <div class="levelCard">
+        <h2>¡A VOLAR!</h2>
+        <p class="levelName">Nivel 1 · TEORÍA DEL ESTADO</p>
+        <p>Elegí la dificultad:</p>
+        <div class="difficultyChoices">
+          <button class="difficultyChoice" data-diff="facil">Fácil</button>
+          <button class="difficultyChoice selected" data-diff="medio">Medio</button>
+          <button class="difficultyChoice" data-diff="dificil">Difícil</button>
+        </div>
+        <button id="levelStartButton">¡A volar! 🐦</button>
+      </div>
+    </div>
+
     <div id="questionBox">
-      <div class="overlayCard">
+      <div class="overlayCard" id="questionCard">
         <h2>¡Ups! El pajarito chocó</h2>
         <p id="questionText"></p>
 
@@ -136,18 +251,26 @@
           <button class="optionBtn" data-index="3"></button>
         </div>
 
+        <p id="answerFeedback" role="status" aria-live="polite"></p>
+
         <p class="small">
           Si contestás bien, el pajarito vuelve a volar. Si no, termina.
         </p>
       </div>
     </div>
-  </div>
 
-  <div id="menu">
-    <span style="font-size: 14px">Elegí dificultad:</span>
-    <button data-diff="facil">Fácil</button>
-    <button data-diff="medio">Medio</button>
-    <button data-diff="dificil">Difícil</button>
+    <div id="resumeBox">
+      <button id="resumeButton">¡Empieza a volar!</button>
+    </div>
+
+    <div id="levelCompleteBox">
+      <div class="levelCard">
+        <h2>¡LLEGASTE A LA META!</h2>
+        <p class="levelName">Completaste el Nivel 1<br>TEORÍA DEL ESTADO</p>
+        <div class="lockedLevel">🔒 Nivel 2 · Próximamente</div>
+        <button id="backToLevelsButton">Volver al inicio</button>
+      </div>
+    </div>
   </div>
 
   <div id="musicControls">
@@ -160,210 +283,521 @@
      * 1) PREGUNTAS - EXACTAS Y EN EL ORDEN QUE PEDISTE
      *****************************************************/
     const questionsPool = [
-      { text:"El Bloque Constitucional Federal está compuesto por:", options:[
-        "Códigos de fondo y tratados sin jerarquía",
-        "Constitución Nacional + Tratados de DDHH con jerarquía constitucional",
-        "Leyes nacionales","Sentencias de la Corte IDH"], correctIndex:1 },
-
-      { text:"La jerarquía normativa puede graficarse como:", options:[
-        "Un triángulo","Una pirámide","Un trapecio","Un rectángulo"], correctIndex:2 },
-
-      { text:"¿Qué característica distingue al Bloque Constitucional Federal?", options:[
-        "Regula solo cuestiones civiles","Es la fuente jurídica más baja",
-        "Goza de supremacía frente a normas inferiores","Solo se aplica a casos penales"], correctIndex:2 },
-
-      { text:"Los tratados internacionales con jerarquía constitucional fueron incorporados principalmente en:",
-        options:["Reforma de 1957","Reforma de 1994","Reforma de 1860","Reforma de 2001"], correctIndex:1 },
-
-      { text:"Las normas ubicadas en el nivel superior del sistema son generalmente:",
-        options:["Detalladas","Breves y genéricas","Solo para el ejecutivo","Municipales"], correctIndex:1 },
-
-      { text:"El control de constitucionalidad argentino es:",
-        options:["Concentrado","Difuso","Legislativo","Realizado por la Comisión IDH"], correctIndex:1 },
-
-      { text:"¿Quiénes pueden ejercer control de constitucionalidad?",
-        options:["Solo la Corte Suprema","Solo jueces federales","Todos los jueces","Los legisladores"], correctIndex:2 },
-
-      { text:"La función de no aplicar normas contrarias al Bloque Constitucional Federal es:",
-        options:["Función legislativa","Función positiva","Función negativa o represiva","Función administrativa"], correctIndex:2 },
-
-      { text:"El control de constitucionalidad tiene efectos:",
-        options:["Erga omnes","Inter partes","Territoriales","Sobre todas las leyes"], correctIndex:1 },
-
-      { text:"El caso Halabi constituye una excepción porque:",
-        options:["No fue decidido por la Corte","Tuvo efecto colectivo","Invalidó tratados","Eliminó control"], correctIndex:1 },
-
-      { text:"La Corte IDH señaló en Almonacid Arellano que:",
-        options:["Los jueces pueden ignorar SIDH","Aplicar normas contrarias",
-        "Una norma local contraria a la CADH es inconvencional","El DI no sirve"], correctIndex:2 },
-
-      { text:"El control de convencionalidad puede ser:",
-        options:["Solo a petición","Solo de oficio","A petición o de oficio","Al final del proceso"], correctIndex:2 },
-
-      { text:"¿Qué art. de la Constitución provincial de Tucumán regula el control constitucional?",
-        options:["Const. Tucumán art 10","CPC art 87","Ley 24.660","Ley 6315"], correctIndex:1 },
-
-      { text:"Una diferencia entre Corte IDH y Comisión IDH es que:",
-        options:["Ambas litigiosas","La Comisión resuelve","La Corte dicta sentencias obligatorias","La Corte recomienda"], correctIndex:2 },
-
-      { text:"Según CSJN en Carranza Latrubesse, las recomendaciones de la Comisión IDH son:",
-        options:["No vinculantes","Vinculantes"], correctIndex:0 },
-
-      { text:"¿En el caso S.R.L., qué derecho reclamaba la accionante?",
-        options:["Salidas","Trabajo","Estudiar carrera universitaria","Reducción"], correctIndex:2 },
-
-      { text:"¿Qué tipo de acción presentó S.R.L.?",
-        options:["Amparo","Casación","Habeas corpus correctivo","Queja"], correctIndex:2 },
-
-      { text:"El único derecho del que está privada una persona condenada es:",
-        options:["Educación","Salud","Libertad ambulatoria","Participación política"], correctIndex:2 },
-
-      { text:"El paradigma adecuado para interpretar el caso de S.R.L. es el de:",
-        options:["Seguridad","Orden público","Derechos Humanos","Prevención"], correctIndex:2 },
-
-      { text:"En el caso S.R.L. la CSJT determinó que pedir informes al Servicio Penitenciario era:",
-        options:["Siempre necesario","Prohibido",
-        "No previsto y generaba demoras inconstitucionales","Irrelevante"], correctIndex:2 },
-
-      { text:"La Ley nacional N° 26.206 establece que la educación en encierro:",
-        options:["Puede limitarse","Requiere autorización",
-        "No admite limitación por encierro","Depende del director"], correctIndex:2 },
-
-      { text:"En el caso de S.R.L.el fundamento del derecho a estudiar según la CSJT está en:",
-        options:["Fines de la pena","Reinserción","La Condición humana","Presupuesto"], correctIndex:2 },
-
-      { text:"En el caso de S.R.L. la CSJT ordenó al juez de ejecución:",
-        options:["Negar permisos","Nueva condena","Garantizar cursado y exámenes","Más informes"], correctIndex:2 },
-
-      { text:"En el caso de S.R.L. el principal obstáculo al ejericico del derecho fue:",
-        options:["El transporte","La demora por informes penitenciarios","El cupo","La conducta"], correctIndex:1 },
-
-      { text:"La Educación en personas privadas de libertad está protegida por:",
-        options:["Reglamentos","Constitución y tratados","Decretos","Informes"], correctIndex:1 },
-
-      { text:"En el caso M.I.M. de L.P. y G.F.J. la jueza respecto del art. 562 CCyC declaró su:",
-        options:["Constitucionalidad","Inconstitucionalidad e inconvencionalidad parcial",
-        "Inaplicabilidad","Derogación"], correctIndex:1 },
-
-      { text:"En el caso M.I.M. de L.P. y G.F.J. los peticionantes usaban Gestación por Sustitución por:",
-        options:["Cuestiones Laborales","Patologías que hacían inviable el embarazo","Prohibición","Era más económico"], correctIndex:1 },
-
-      { text:"En el caso M.I.M. de L.P. y G.F.J. la jueza fundamentó su posición en:",
-        options:["Adm","Penal","Familia + salud reproductiva","Comercial"], correctIndex:2 },
-
-      { text:"En el caso M.I.M. de L.P. y G.F.J. la filiación se determinó por:",
-        options:["Gestante","Voluntad procreacional + genética","Registro civil","Plazos"], correctIndex:1 },
-
-      { text:"En el caso M.I.M. de L.P. y G.F.J. la jueza destacó:",
-        options:["Neutralidad","Interés superior del niño","Reserva de ley","Orden público"], correctIndex:1 },
-
-      { text:"La gestación por sustitución no fue regulada porque:",
-        options:["No existía","Requería debate interdisciplinario profundo","Era ilegal","No había casos"], correctIndex:1 },
-
-      { text:"En el caso M.I.M. de L.P. y G.F.J. la sentencia ordenó que el niño/a sea:",
-        options:["Hijo de gestante","Sin filiación","Inscripto con apellidos genéticos","Adoptabilidad"], correctIndex:2 },
-
-      { text:"En el caso M.I.M. de L.P. y G.F.J. la inconstitucionalidad fue:",
-        options:["Total","Parcial","Errónea","Retroactiva"], correctIndex:1 },
-
-      { text:"Cuál de los siguientes fallos es un conocido Leading case estadounidense?:",
-        options:["Plessy","Brown","Marbury","Miranda"], correctIndex:2 },
-
-      { text:"El primer antecedente argentino en materia de control judicial de constitucionalidad es:",
-        options:["Halabi","Sojo","Carranza","Acosta"], correctIndex:1 },
-
-      { text:"El caso Sojo versaba sobre:",
-        options:["Culto","Expresión + prisión por Diputados","Educación","Propiedad"], correctIndex:1 },
-
-      { text:"Las Opiniones consultivas de la Corte IDH son:",
-        options:["Obligatorias","Sin valor","Interpretaciones autorizadas","Disciplinarias"], correctIndex:2 },
-
-      { text:"Las Sentencias de Corte IDH que no involucran a Argentina son:",
-        options:["Obligatorias","Doctrina","No citables","Modifican leyes"], correctIndex:1 },
-
-      { text:"La Comisión IDH emite:",
-        options:["Sentencias","Opiniones y recomendaciones","Órdenes","Decretos"], correctIndex:1 },
-
-      { text:"El control de constitucionalidad evita que:",
-        options:["El poder judicial legisle","Se apliquen normas contrarias al bloque constitucional federal","Analicen tratados","Congreso regule"], correctIndex:1 },
-
-      { text:"El Paradigma de seguridad en el caso S.R.L.:",
-        options:["Reconocía derecho","Supeditaba a informes y conducta","Eliminaba educación","Acceso inmediato"], correctIndex:1 },
-
-      { text:"El trapecio constitucional representa:",
-        options:["Niveles judiciales","Jerarquía normativa","Tipos de tratados","Proceso legislativo"], correctIndex:1 },
-
-      { text:"EL caso S.R.L. es ejemplo de:",
-        options:["Control correcto","Desconocimiento SIDH","Prohibición de estudiar"], correctIndex:0 },
-
-      { text:"El Control judicial es un mecanismo:",
-        options:["Adm","Legislativo","Interpoderes e intrapoder","Ejecutivo"], correctIndex:2 },
-
-      { text:"En el caso del fallo sobre gestación por sustitución la jueza sostuvo que el Estado debe:",
-        options:["Interferir","Obstaculizar","No interferir y permitir salud reproductiva","Limitar ciencia"], correctIndex:2 },
-
-      { text:"La educación en cárceles debe ser:",
-        options:["Restringida","Opcional","Sin discriminación","Decidida por director"], correctIndex:2 },
-
-      { text:"En el caso M.I.M. de L.P. y G.F.J. la jueza se fundamentó en tratados como:",
-        options:["Convención del Niño + CEDAW","Viena","Varsovia","Antártico"], correctIndex:0 },
-    ];
+        {
+          "text": "Según Abal Medina y Nejamkis, ¿por qué el Estado es un concepto central para la ciencia política?",
+          "options": [
+            "Porque toda organización social es estatal",
+            "Porque la política moderna se constituye principalmente alrededor del Estado",
+            "Porque el Estado controla todas las relaciones sociales",
+            "Porque toda forma de autoridad es burocrática"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Qué muestra el recorrido histórico sobre las primeras sociedades humanas?",
+          "options": [
+            "Que toda sociedad tuvo un Estado centralizado",
+            "Que el Estado apareció junto con el sufragio",
+            "Que la existencia del Estado no es una constante de la historia humana",
+            "Que las primeras sociedades poseían burocracias profesionales"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "Según Michael Mann, ¿qué actividad favoreció el surgimiento de las primeras civilizaciones?",
+          "options": [
+            "La agricultura aluvial y de regadío",
+            "El comercio financiero",
+            "La producción industrial",
+            "La navegación transoceánica"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿Cuáles son las cuatro fuentes del poder social identificadas por Michael Mann?",
+          "options": [
+            "Jurídica, religiosa, territorial y administrativa",
+            "Ideológica, económica, política y militar",
+            "Económica, cultural, tecnológica y burocrática",
+            "Política, electoral, parlamentaria y judicial"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Qué busca evitar el concepto de «matriz de poder social» empleado en el texto?",
+          "options": [
+            "La comparación entre procesos históricos",
+            "Las explicaciones reduccionistas que atribuyen todo a una única fuente de poder",
+            "El análisis de las relaciones económicas",
+            "La distinción entre poder político y militar"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "En la definición de Max Weber, ¿qué significa dominación?",
+          "options": [
+            "La utilización permanente de violencia",
+            "La eliminación de todo conflicto social",
+            "La probabilidad de encontrar obediencia a determinados mandatos",
+            "La aceptación unánime de un gobierno"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué relación establece el texto entre capitalismo y propiedad privada?",
+          "options": [
+            "El capitalismo vuelve innecesaria la intervención estatal",
+            "Las relaciones capitalistas requieren una garantía autoritaria de la propiedad privada",
+            "La propiedad privada elimina las diferencias de clase",
+            "El capitalismo reemplaza al Estado por el mercado"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Qué proceso político acompañó la formación del Estado moderno?",
+          "options": [
+            "La dispersión de los medios de coerción",
+            "La eliminación de la administración pública",
+            "La concentración de los medios de administración y coerción",
+            "La transferencia de la autoridad a organizaciones religiosas"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué caracteriza a la burocracia moderna en la perspectiva de Weber?",
+          "options": [
+            "La especialización profesional y el apego a reglas formales",
+            "La administración personal de los recursos públicos",
+            "La ausencia de procedimientos escritos",
+            "La elección popular de todos los funcionarios"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿Cuál de estos elementos integra la definición de Estado formulada por los autores?",
+          "options": [
+            "La ausencia de fronteras territoriales",
+            "El reclamo del monopolio de la coerción física legítima sobre un territorio",
+            "El control exclusivo de todas las fuentes del poder social",
+            "La obediencia voluntaria de toda la población"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "Según Oszlak, ¿qué significa que un Estado pueda externalizar su poder?",
+          "options": [
+            "Ser reconocido como unidad soberana en el sistema interestatal",
+            "Delegar sus funciones en empresas extranjeras",
+            "Extender sus leyes a otros países",
+            "Recaudar impuestos sobre el comercio exterior"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿En qué consiste la capacidad estatal de diferenciar su control?",
+          "options": [
+            "En construir símbolos de identidad nacional",
+            "En recibir el reconocimiento de otros Estados",
+            "En crear instituciones profesionalizadas capaces de obtener y administrar recursos",
+            "En permitir que cada grupo ejerza su propia coerción"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué transformación política fue central durante la consolidación de los Estados nacionales?",
+          "options": [
+            "La desaparición de la esfera pública",
+            "La ampliación de la representación y de los derechos políticos",
+            "La eliminación de la división de poderes",
+            "La restauración de las relaciones feudales"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Qué rasgo distingue al Estado de bienestar keynesiano?",
+          "options": [
+            "La reducción de sus funciones a la defensa exterior",
+            "La eliminación del gasto público",
+            "La intervención económica y la ampliación de políticas de integración social",
+            "La prohibición de regular los mercados"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué conclusión presenta el texto acerca del Estado en el nuevo orden global?",
+          "options": [
+            "La globalización eliminó definitivamente al Estado nacional",
+            "Los Estados conservaron intactas todas sus capacidades",
+            "El Estado fue reemplazado completamente por los bloques regionales",
+            "Los Estados continúan existiendo, pero sus capacidades y funciones se redefinen"
+          ],
+          "correctIndex": 3
+        },
+        {
+          "text": "¿Qué tres tipos de teoría distingue D’Auria?",
+          "options": [
+            "Jurídica, sociológica y económica",
+            "Explicativa, normativa y crítica",
+            "Antigua, moderna y contemporánea",
+            "Autoritaria, poliárquica y comunicativa"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Cuál fue el aporte principal de los sofistas al pensamiento político?",
+          "options": [
+            "Presentaron la política como una habilidad que podía enseñarse y aprenderse",
+            "Defendieron el gobierno de los filósofos",
+            "Crearon la teoría de la división de poderes",
+            "Separaron completamente la política de la retórica"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿Por qué la teoría política de Platón es predominantemente normativa?",
+          "options": [
+            "Porque se limita a describir las instituciones atenienses",
+            "Porque rechaza toda idea de justicia",
+            "Porque propone cómo debe organizarse una polis justa",
+            "Porque considera que cualquier gobierno es igualmente válido"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué busca Aristóteles al estudiar diferentes organizaciones políticas?",
+          "options": [
+            "La polis absolutamente perfecta, sin considerar la realidad",
+            "La mejor polis posible, atendiendo a condiciones reales",
+            "La eliminación del gobierno de las leyes",
+            "La subordinación de la política a la religión"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Qué importancia atribuye D’Auria a Maquiavelo?",
+          "options": [
+            "Sometió la política a la moral religiosa",
+            "Reemplazó la observación por modelos ideales",
+            "Estudió la política según su funcionamiento efectivo",
+            "Negó la existencia de conflictos políticos"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Cómo caracteriza D’Auria el universo político?",
+          "options": [
+            "Como un campo de influencias recíprocas entre actores con valores e intereses",
+            "Como una actividad exclusiva de los funcionarios estatales",
+            "Como un espacio en el que no existen conflictos",
+            "Como un conjunto compuesto únicamente por normas jurídicas"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿Qué elementos componen analíticamente una acción política?",
+          "options": [
+            "Territorio, población y gobierno",
+            "Valores o intereses, técnicas de influencia y objetivos",
+            "Legalidad, legitimidad y soberanía",
+            "Normas, sanciones y funcionarios"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Cuándo es eficiente una acción política?",
+          "options": [
+            "Cuando alcanza el objetivo sin considerar sus costos",
+            "Cuando es moralmente aceptada por toda la sociedad",
+            "Cuando alcanza el objetivo de la manera menos costosa para el actor",
+            "Cuando utiliza exclusivamente argumentos"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué distingue al político de quien ejerce una influencia ocasional?",
+          "options": [
+            "El político procura acumular más influencia mediante la influencia que ya posee",
+            "El político nunca utiliza contraprestaciones",
+            "El político actúa siempre desde una institución estatal",
+            "El político carece de objetivos personales"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿Qué tres elementos conforman un orden político?",
+          "options": [
+            "Gobierno, mercado y sociedad",
+            "Territorio, soberanía y población",
+            "Régimen de poder, derecho y creencias políticas predominantes",
+            "Ejecutivo, Legislativo y Judicial"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué diferencia establece D’Auria entre influencia y poder?",
+          "options": [
+            "La influencia es una capacidad de los actores; el poder es una característica del orden social",
+            "La influencia es estatal y el poder es exclusivamente privado",
+            "La influencia es legítima y el poder es necesariamente ilegal",
+            "La influencia se basa en argumentos y el poder solamente en amenazas"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿Qué régimen de poder surge cuando predominan las contraprestaciones?",
+          "options": [
+            "Autoritario",
+            "Poliárquico",
+            "Teocrático",
+            "Comunicativo"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "Según la distinción retomada de Habermas, ¿qué caracteriza a la acción comunicativa?",
+          "options": [
+            "La utilización de amenazas para producir obediencia",
+            "El intercambio de beneficios entre actores",
+            "La búsqueda de entendimiento mediante razones y argumentos",
+            "La imposición de los imperativos del mercado"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Cómo se relacionan el poder y el derecho dentro del orden político?",
+          "options": [
+            "El poder aporta efectividad al derecho y el derecho aporta legalidad al poder",
+            "El derecho elimina la necesidad de poder",
+            "El poder produce legitimidad y las creencias producen legalidad",
+            "El poder y el derecho funcionan de manera independiente"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿En qué consiste la tarea de la teoría crítica?",
+          "options": [
+            "En formular opiniones negativas sobre cualquier gobierno",
+            "En establecer un modelo político obligatorio",
+            "En revelar los supuestos, prejuicios y condicionamientos históricos de una teoría o creencia",
+            "En rechazar toda explicación científica de la política"
+          ],
+          "correctIndex": 2
+        }
+      ];
 
     /*****************************************************
      * 2) AUDIO - MÚSICA SOLO EN MENÚ
      *****************************************************/
-    const musicGame = new Audio("./flappy_flying_deep.wav");
-    musicGame.loop = true;
+    let audioContext = null;
+    let musicBus = null;
+    let effectsBus = null;
+    let feedbackBus = null;
+    let musicTimer = null;
+    let flightMusicTimer = null;
+    let feedbackTimer = null;
     let musicStarted = false;
+    let flightMusicStarted = false;
     let musicEnabled = true;
-    const musicBaseVolume = 0.10;
+    const menuNodes = [];
+    const flightNodes = [];
+    const feedbackNodes = [];
+    const ouchAudio = new Audio("data:audio/ogg;base64,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");
+    ouchAudio.preload = "auto";
+    ouchAudio.volume = 1;
 
-    const sfxFlap  = new Audio("./sfx_flap_soft.wav");
-    const sfxScore = new Audio("./sfx_score_popup.wav");
-    const sfxHit   = new Audio("./sfx_damage.wav");
-
-    let fadeAnimationId = null;
-    function fadeMusicTo(targetVolume, durationMs = 600, pauseAtEnd = false) {
-      if (!musicStarted) return;
-      if (fadeAnimationId) cancelAnimationFrame(fadeAnimationId);
-
-      const startVolume = musicGame.volume;
-      const delta = targetVolume - startVolume;
-      const startTime = performance.now();
-
-      function step(now) {
-        const t = Math.min(1, (now - startTime) / durationMs);
-        musicGame.volume = startVolume + delta * t;
-
-        if (t < 1) {
-          fadeAnimationId = requestAnimationFrame(step);
-        } else {
-          fadeAnimationId = null;
-          if (pauseAtEnd && targetVolume === 0) musicGame.pause();
-        }
+    function getAudioContext() {
+      if (!audioContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+        audioContext = new AudioContextClass();
+        musicBus = audioContext.createGain();
+        effectsBus = audioContext.createGain();
+        feedbackBus = audioContext.createGain();
+        musicBus.gain.value = 1;
+        effectsBus.gain.value = 1;
+        feedbackBus.gain.value = 1;
+        musicBus.connect(audioContext.destination);
+        effectsBus.connect(audioContext.destination);
+        feedbackBus.connect(audioContext.destination);
       }
-      fadeAnimationId = requestAnimationFrame(step);
+      if (audioContext.state === "suspended") audioContext.resume();
+      return audioContext;
+    }
+
+    function playTone(frequency, duration, type = "sine", volume = 0.18, delay = 0, group = null) {
+      const context = getAudioContext();
+      if (!context) return;
+
+      const start = context.currentTime + delay;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(volume, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      oscillator.connect(gain);
+      const destination = group === menuNodes || group === flightNodes
+        ? musicBus
+        : group === feedbackNodes
+          ? feedbackBus
+          : effectsBus;
+      gain.connect(destination || context.destination);
+      if (group) {
+        group.push(oscillator);
+        oscillator.addEventListener("ended", () => {
+          const index = group.indexOf(oscillator);
+          if (index >= 0) group.splice(index, 1);
+        });
+      }
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.02);
+    }
+
+    function stopNodes(group) {
+      group.splice(0).forEach(node => {
+        try { node.stop(); } catch (_) {}
+      });
+    }
+
+    function setBusLevel(bus, level) {
+      const context = getAudioContext();
+      if (!context || !bus) return;
+      bus.gain.cancelScheduledValues(context.currentTime);
+      bus.gain.setValueAtTime(level, context.currentTime);
+    }
+
+    function playEffect(name) {
+      if (name === "flap") {
+        playTone(560, 0.07, "sine", 0.22);
+        playTone(820, 0.08, "sine", 0.18, 0.045);
+      } else if (name === "score") {
+        playTone(523.25, 0.11, "triangle", 0.22);
+        playTone(659.25, 0.11, "triangle", 0.22, 0.10);
+        playTone(783.99, 0.15, "triangle", 0.24, 0.20);
+      } else if (name === "hit") {
+        playTone(190, 0.18, "sawtooth", 0.25);
+        playTone(115, 0.25, "square", 0.17, 0.10);
+      }
+    }
+
+    const menuMelody = [261.63, 329.63, 392, 523.25, 440, 392, 329.63, 293.66];
+    function playMenuMelody() {
+      if (!musicEnabled || !musicStarted || gameState !== "menu") return;
+      menuMelody.forEach((note, index) => {
+        playTone(note, 0.28, "triangle", 0.075, index * 0.30, menuNodes);
+      });
+    }
+
+    function stopMenuMusic() {
+      musicStarted = false;
+      if (musicTimer) clearInterval(musicTimer);
+      musicTimer = null;
+      stopNodes(menuNodes);
     }
 
     function ensureMenuMusic() {
-      if (!musicEnabled) return;
+      if (!musicEnabled || gameState !== "menu") return;
+      getAudioContext();
+      setBusLevel(musicBus, 1);
+      if (musicStarted) return;
+      musicStarted = true;
+      playMenuMelody();
+      musicTimer = setInterval(playMenuMelody, 2500);
+    }
 
-      if (!musicStarted) {
-        musicStarted = true;
-        musicGame.currentTime = 0;
-        musicGame.volume = 0;
-        musicGame.play().then(() => {
-          fadeMusicTo(musicBaseVolume, 800);
-        }).catch(() => {});
-      } else if (musicGame.paused) {
-        musicGame.volume = 0;
-        musicGame.play().then(() => {
-          fadeMusicTo(musicBaseVolume, 800);
-        }).catch(() => {});
-      } else {
-        fadeMusicTo(musicBaseVolume, 400);
+    const flightMelody = [392, 440, 493.88, 523.25, 493.88, 440, 392, 329.63];
+    function playFlightMelody() {
+      if (!musicEnabled || !flightMusicStarted || gameState !== "playing") return;
+      flightMelody.forEach((note, index) => {
+        playTone(note, 0.20, "sine", 0.055, index * 0.22, flightNodes);
+      });
+    }
+
+    function startFlightMusic() {
+      if (!musicEnabled || gameState !== "playing" || flightMusicStarted) return;
+      stopMenuMusic();
+      setBusLevel(musicBus, 1);
+      flightMusicStarted = true;
+      playFlightMelody();
+      flightMusicTimer = setInterval(playFlightMelody, 1900);
+    }
+
+    function stopFlightMusic() {
+      setBusLevel(musicBus, 0);
+      flightMusicStarted = false;
+      if (flightMusicTimer) clearInterval(flightMusicTimer);
+      flightMusicTimer = null;
+      stopNodes(flightNodes);
+    }
+
+    function hardStopFlightAudio() {
+      stopMenuMusic();
+      stopFlightMusic();
+
+      // Desconecta el canal completo: ninguna nota ya programada puede seguir sonando.
+      if (audioContext && musicBus) {
+        try { musicBus.disconnect(); } catch (_) {}
+        musicBus = audioContext.createGain();
+        musicBus.gain.value = 0;
+        musicBus.connect(audioContext.destination);
       }
     }
+
+    function stopFeedbackSound() {
+      if (feedbackTimer) clearInterval(feedbackTimer);
+      feedbackTimer = null;
+      stopNodes(feedbackNodes);
+      setBusLevel(feedbackBus, 0);
+    }
+
+    function playFeedbackSound(kind) {
+      stopFeedbackSound();
+      setBusLevel(feedbackBus, 1);
+
+      function playPattern() {
+        if (kind === "celebration") {
+          [523.25, 659.25, 783.99, 1046.5].forEach((note, index) => {
+            playTone(note, 0.18, "triangle", 0.24, index * 0.13, feedbackNodes);
+          });
+        } else {
+          [349.23, 293.66, 220, 164.81].forEach((note, index) => {
+            playTone(note, 0.25, "sawtooth", 0.13, index * 0.18, feedbackNodes);
+          });
+        }
+      }
+
+      playPattern();
+      feedbackTimer = setInterval(playPattern, kind === "celebration" ? 1050 : 1250);
+    }
+
+    function stopOuch() {
+      ouchAudio.pause();
+      ouchAudio.currentTime = 0;
+    }
+
+    function playOuch() {
+      setBusLevel(musicBus, 0);
+      stopOuch();
+      ouchAudio.play().catch(() => {
+        // Respaldo breve si el navegador bloquea el archivo de audio.
+        playEffect("hit");
+      });
+    }
+
+    function fadeMusicTo(targetVolume, durationMs = 600, pauseAtEnd = false) {
+      if (targetVolume === 0 || pauseAtEnd) stopMenuMusic();
+      else ensureMenuMusic();
+    }
+
+    // Los navegadores bloquean el audio automático. El primer clic o tecla
+    // habilita el sonido de forma compatible sin pedir permisos adicionales.
+    function unlockAudio() {
+      getAudioContext();
+    }
+
+    window.addEventListener("pointerdown", unlockAudio, { once: true, capture: true });
+    window.addEventListener("keydown", unlockAudio, { once: true, capture: true });
 
     /*****************************************************
      * 3) VARIABLES PRINCIPALES
@@ -372,27 +806,36 @@
     const ctx = canvas.getContext("2d");
 
     const hud = document.getElementById("hud");
+    const levelLabel = document.getElementById("levelLabel");
     const scoreLabel = document.getElementById("scoreLabel");
     const difficultyLabel = document.getElementById("difficultyLabel");
 
-    const menu = document.getElementById("menu");
-    const menuButtons = document.querySelectorAll("button[data-diff]");
+    const difficultyButtons = document.querySelectorAll("button[data-diff]");
+    const levelIntroBox = document.getElementById("levelIntroBox");
+    const levelStartButton = document.getElementById("levelStartButton");
+    const levelCompleteBox = document.getElementById("levelCompleteBox");
+    const backToLevelsButton = document.getElementById("backToLevelsButton");
 
     const questionBox = document.getElementById("questionBox");
+    const questionCard = document.getElementById("questionCard");
     const questionText = document.getElementById("questionText");
+    const answerFeedback = document.getElementById("answerFeedback");
     const optionButtons = document.querySelectorAll(".optionBtn");
+    const resumeBox = document.getElementById("resumeBox");
+    const resumeButton = document.getElementById("resumeButton");
 
     const musicToggleBtn = document.getElementById("musicToggleBtn");
     const testSoundBtn   = document.getElementById("testSoundBtn");
 
-    let gameState = "menu"; // menu | playing | question
-    let currentDifficultyKey = null;
+    let gameState = "intro"; // intro | playing | question | ready | finishing | complete
+    let currentDifficultyKey = "medio";
     let currentDifficulty = null;
 
     let frameCount = 0;
     let obstacles = [];
     let score = 0;
     let level = 1;
+    let finishAnimationFrame = null;
 
     let usedQuestionIndices = new Set();
     let currentQuestionIndex = null;
@@ -413,6 +856,15 @@
       medio:  { label:"Medio",  speed:3.1, gap:125, spawn:120 },
       dificil:{ label:"Difícil",speed:3.9, gap:105, spawn:105 }
     };
+
+    const levelsConfig = Array.from({ length: 14 }, (_, index) => ({
+      number: index + 1,
+      title: index === 0 ? "TEORÍA DEL ESTADO" : "PRÓXIMAMENTE",
+      goal: index === 0 ? 15 : null,
+      unlocked: index === 0
+    }));
+    const currentLevel = levelsConfig[0];
+    currentDifficulty = difficultyConfig[currentDifficultyKey];
 
     let wingPhase = 0; // para la animación de alas
 
@@ -494,6 +946,95 @@
       ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
     }
 
+    function drawStateTree() {
+      const x = canvas.width - 190;
+      const ground = canvas.height - 40;
+
+      ctx.save();
+      ctx.fillStyle = "#754c24";
+      ctx.fillRect(x - 24, ground - 190, 48, 190);
+
+      ctx.strokeStyle = "#754c24";
+      ctx.lineWidth = 16;
+      ctx.lineCap = "round";
+      [[-85,-115],[-52,-160],[62,-152],[92,-105]].forEach(([dx,dy]) => {
+        ctx.beginPath();
+        ctx.moveTo(x, ground - 125);
+        ctx.lineTo(x + dx, ground + dy);
+        ctx.stroke();
+      });
+
+      const crowns = [
+        [x, ground-230, 78], [x-72, ground-202, 64], [x+70, ground-202, 66],
+        [x-38, ground-270, 62], [x+42, ground-272, 64]
+      ];
+      crowns.forEach(([cx,cy,r], index) => {
+        ctx.fillStyle = index % 2 ? "#2f9e44" : "#37b24d";
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.strokeStyle = "#5f3a1c";
+      ctx.lineWidth = 9;
+      [-1,1].forEach(direction => {
+        ctx.beginPath();
+        ctx.moveTo(x, ground - 4);
+        ctx.quadraticCurveTo(x + 50 * direction, ground - 12, x + 86 * direction, ground - 2);
+        ctx.stroke();
+      });
+
+      ctx.fillStyle = "#fff7d6";
+      ctx.strokeStyle = "#5f3a1c";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(x - 70, ground - 130, 140, 48, 10);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#173b2d";
+      ctx.font = "bold 21px system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("EL ESTADO", x, ground - 106);
+      ctx.restore();
+    }
+
+    function beginLevelComplete() {
+      if (gameState !== "playing") return;
+      hardStopFlightAudio();
+      gameState = "finishing";
+      obstacles = [];
+
+      const targetX = canvas.width - 300;
+      const targetY = canvas.height - 220;
+
+      function animateArrival() {
+        if (gameState !== "finishing") return;
+        wingPhase += 0.22;
+        bird.x += Math.min(5, Math.max(1, (targetX - bird.x) * 0.045));
+        bird.y += (targetY - bird.y) * 0.055;
+        bird.vy = 0;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        drawStateTree();
+        drawBird();
+
+        if (Math.abs(targetX - bird.x) > 7 || Math.abs(targetY - bird.y) > 7) {
+          finishAnimationFrame = requestAnimationFrame(animateArrival);
+          return;
+        }
+
+        gameState = "complete";
+        playFeedbackSound("celebration");
+        setTimeout(() => {
+          if (gameState === "complete") levelCompleteBox.style.display = "flex";
+        }, 450);
+      }
+
+      finishAnimationFrame = requestAnimationFrame(animateArrival);
+    }
+
     /*****************************************************
      * 5) RESET & MENÚ
      *****************************************************/
@@ -508,7 +1049,8 @@
       bird.y = canvas.height * 0.5;
       bird.vy = 0;
 
-      scoreLabel.textContent = "Puntos: 0";
+      scoreLabel.textContent = `Meta: 0/${currentLevel.goal}`;
+      levelLabel.textContent = `Nivel ${currentLevel.number} · ${currentLevel.title}`;
     }
 
     function softResetAfterQuestion() {
@@ -520,24 +1062,27 @@
     }
 
     function goToMenu() {
-      gameState = "menu";
+      hardStopFlightAudio();
+      stopFeedbackSound();
+      stopOuch();
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      gameState = "intro";
       fullReset();
       hud.style.display = "none";
-      menu.style.display = "flex";
+      levelIntroBox.style.display = "flex";
+      levelCompleteBox.style.display = "none";
       questionBox.style.display = "none";
-      difficultyLabel.textContent = "Dificultad: -";
+      resumeBox.style.display = "none";
+      difficultyLabel.textContent = "Dificultad: " + currentDifficulty.label;
 
-      ensureMenuMusic();
       draw();
     }
 
-    function startGame(diffKey) {
-      currentDifficultyKey = diffKey;
-      currentDifficulty = difficultyConfig[diffKey];
-
+    function startGame() {
       fullReset();
       hud.style.display = "flex";
-      menu.style.display = "none";
+      levelIntroBox.style.display = "none";
+      levelCompleteBox.style.display = "none";
 
       if (musicStarted) {
         fadeMusicTo(0, 700, true);
@@ -545,6 +1090,7 @@
 
       difficultyLabel.textContent = "Dificultad: " + currentDifficulty.label;
       gameState = "playing";
+      startFlightMusic();
       loop();
     }
 
@@ -569,13 +1115,18 @@
       const q = questionsPool[currentQuestionIndex];
       questionText.textContent = q.text;
 
+      answerFeedback.style.display = "none";
+      answerFeedback.textContent = "";
+
       optionButtons.forEach((btn, i) => {
         btn.textContent = q.options[i] ?? "";
         btn.style.display = q.options[i] ? "block" : "none";
+        btn.disabled = false;
+        btn.classList.remove("correctAnswer", "incorrectAnswer");
       });
 
-      sfxHit.currentTime = 0;
-      sfxHit.play();
+      hardStopFlightAudio();
+      playOuch();
 
       questionBox.style.display = "flex";
       gameState = "question";
@@ -585,17 +1136,46 @@
       const q = questionsPool[currentQuestionIndex];
       if (!q) return;
 
+      // Corte duro de todo audio previo antes de dar la devolución.
+      hardStopFlightAudio();
+      stopFeedbackSound();
+      stopOuch();
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+
+      optionButtons.forEach(btn => btn.disabled = true);
+      answerFeedback.style.display = "block";
+
       if (idx === q.correctIndex) {
-        questionBox.style.display = "none";
-        alert("¡Respuesta correcta! 🐦✨");
-        softResetAfterQuestion();
-        gameState = "playing";
-        loop();
+        optionButtons[idx].classList.add("correctAnswer");
+        answerFeedback.textContent = "¡Respuesta correcta! Volvemos a volar 🐦✨";
+        playFeedbackSound("celebration");
+
+        setTimeout(() => {
+          questionBox.style.display = "none";
+          softResetAfterQuestion();
+          gameState = "ready";
+          resumeBox.style.display = "flex";
+          draw();
+        }, 650);
       } else {
-        alert("Respuesta incorrecta 💥");
-        goToMenu();
+        optionButtons[idx].classList.add("incorrectAnswer");
+        answerFeedback.textContent = "¡Revisá el texto y volvé volando a jugar!";
+        playFeedbackSound("down");
+
+        setTimeout(() => {
+          goToMenu();
+        }, 2200);
       }
     }
+
+    resumeButton.addEventListener("click", () => {
+      if (gameState !== "ready") return;
+      stopFeedbackSound();
+      resumeBox.style.display = "none";
+      gameState = "playing";
+      startFlightMusic();
+      loop();
+    });
 
     /*****************************************************
      * 7) INPUT
@@ -603,8 +1183,7 @@
     function flap() {
       if (gameState === "playing") {
         bird.vy = jumpStrength;
-        sfxFlap.currentTime = 0;
-        sfxFlap.play();
+        playEffect("flap");
       }
     }
 
@@ -857,31 +1436,17 @@
           if (!o.passed && o.x + o.width < bird.x) {
             o.passed = true;
             score++;
-            scoreLabel.textContent = "Puntos: " + score;
+            scoreLabel.textContent = `Meta: ${Math.min(score, currentLevel.goal)}/${currentLevel.goal}`;
 
-            sfxScore.currentTime = 0;
-            sfxScore.play();
+            playEffect("score");
 
-            // cambios de nivel
-            if (currentDifficultyKey === "facil" && level === 1 && score >= 15) {
-              level = 2;
-              alert("✨ Pasaste al Nivel Medio ✨");
-              currentDifficultyKey = "medio";
-              currentDifficulty = difficultyConfig["medio"];
-              obstacles = [];
-              frameCount = 0;
-            } else if (currentDifficultyKey === "medio" && level === 2 && score >= 30) {
-              level = 3;
-              alert("🔥 Nivel Difícil activado 🔥");
-              currentDifficultyKey = "dificil";
-              currentDifficulty = difficultyConfig["dificil"];
-              obstacles = [];
-              frameCount = 0;
+            if (score >= currentLevel.goal) {
+              beginLevelComplete();
             }
           }
         });
 
-        checkCollisions();
+        if (gameState === "playing") checkCollisions();
       }
 
       draw();
@@ -905,16 +1470,17 @@
       updateMusicToggleLabel();
 
       if (musicEnabled) {
-        ensureMenuMusic();
-      } else if (musicStarted) {
-        fadeMusicTo(0, 800, true);
+        if (gameState === "playing") startFlightMusic();
+      } else {
+        hardStopFlightAudio();
+        stopFeedbackSound();
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       }
     });
 
     testSoundBtn.addEventListener("click", () => {
-      ensureMenuMusic();
-      sfxScore.currentTime = 0;
-      sfxScore.play();
+      getAudioContext();
+      playEffect("score");
     });
 
     optionButtons.forEach(btn => {
@@ -924,10 +1490,21 @@
       });
     });
 
-    menuButtons.forEach(btn => {
+    difficultyButtons.forEach(btn => {
       btn.addEventListener("click", () => {
-        startGame(btn.dataset.diff);
+        currentDifficultyKey = btn.dataset.diff;
+        currentDifficulty = difficultyConfig[currentDifficultyKey];
+        difficultyButtons.forEach(button => button.classList.toggle("selected", button === btn));
       });
+    });
+
+    levelStartButton.addEventListener("click", startGame);
+
+    backToLevelsButton.addEventListener("click", () => {
+      stopFeedbackSound();
+      if (finishAnimationFrame) cancelAnimationFrame(finishAnimationFrame);
+      finishAnimationFrame = null;
+      goToMenu();
     });
 
     /*****************************************************
@@ -935,7 +1512,7 @@
      *****************************************************/
     draw();
     updateMusicToggleLabel();
-    ensureMenuMusic();
+    difficultyLabel.textContent = "Dificultad: " + currentDifficulty.label;
   </script>
 </body>
 </html>
