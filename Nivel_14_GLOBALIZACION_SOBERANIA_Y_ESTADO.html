@@ -1,0 +1,2954 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Teoría del Estado - Nivel 14: Globalización, Soberanía Y Estado</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0b1020;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+    }
+
+    h1 {
+      margin: 10px 0;
+      font-size: 22px;
+      text-align: center;
+    }
+
+    #gameWrapper {
+      position: relative;
+    }
+
+    #gameCanvas {
+      background: linear-gradient(#7be0ff, #e0f8ff);
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      width: min(960px, 95vw);
+      height: auto;
+    }
+
+    #hud {
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      right: 8px;
+      display: none;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: bold;
+      text-shadow: 1px 1px 3px #000;
+      pointer-events: none;
+    }
+
+    #musicControls {
+      margin-top: 6px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: none;
+      background: #ffe066;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+      font-size: 13px;
+    }
+
+    button:hover {
+      background: #ffea8a;
+    }
+
+    #questionBox {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+
+    .overlayCard {
+      background: rgba(10, 10, 25, 0.92);
+      padding: 18px;
+      border-radius: 12px;
+      width: 80%;
+      max-width: 380px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+      transition: background-color 180ms ease, transform 180ms ease;
+    }
+
+    .optionBtn.correctAnswer {
+      background: #37b86b;
+      color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(55, 184, 107, 0.35);
+    }
+
+    .optionBtn.incorrectAnswer {
+      background: #d94a4a;
+      color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(217, 74, 74, 0.35);
+    }
+
+    .overlayCard h2 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    .options {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .small {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 10px;
+    }
+
+    #answerFeedback {
+      display: none;
+      margin: 12px 0 0;
+      font-size: 16px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    #resumeBox {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(11, 16, 32, 0.28);
+      pointer-events: auto;
+    }
+
+    #levelIntroBox,
+    #levelCompleteBox {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(11, 16, 32, 0.34);
+      pointer-events: auto;
+    }
+
+    #levelCompleteBox { display: none; }
+
+    .levelCard {
+      width: min(440px, 88%);
+      padding: 26px 22px;
+      border: 2px solid rgba(255,255,255,0.28);
+      border-radius: 22px;
+      background: rgba(10, 24, 45, 0.94);
+      text-align: center;
+      box-shadow: 0 14px 38px rgba(0,0,0,0.48);
+    }
+
+    .levelCard h2 {
+      margin: 0;
+      color: #ffe066;
+      font-size: clamp(30px, 5vw, 48px);
+      letter-spacing: 0.04em;
+    }
+
+    .levelName {
+      margin: 10px 0 20px;
+      font-size: clamp(17px, 2.6vw, 23px);
+      font-weight: 800;
+    }
+
+    .difficultyChoices {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 12px 0 18px;
+      flex-wrap: wrap;
+    }
+
+    .difficultyChoice.selected {
+      color: #fff;
+      background: #2878d0;
+      box-shadow: 0 0 0 3px rgba(77, 171, 255, 0.4);
+    }
+
+    #levelStartButton,
+    #backToLevelsButton {
+      padding: 13px 28px;
+      color: #fff;
+      background: #37b86b;
+      font-size: 19px;
+    }
+
+    .lockedLevel {
+      margin: 18px auto;
+      padding: 12px 16px;
+      border: 1px dashed rgba(255,255,255,0.4);
+      border-radius: 12px;
+      color: #cbd5e1;
+      background: rgba(255,255,255,0.06);
+    }
+
+    #resumeButton {
+      padding: 16px 28px;
+      font-size: 22px;
+      background: #37b86b;
+      color: #ffffff;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Teoría del Estado - Nivel 14: Modo Aventura 🐦</h1>
+
+  <div id="gameWrapper">
+    <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+    <div id="hud">
+      <span id="levelLabel">Nivel 14 · GLOBALIZACIÓN, SOBERANÍA Y ESTADO</span>
+      <span id="scoreLabel">Meta: 0/18</span>
+      <span id="difficultyLabel">Dificultad: -</span>
+    </div>
+
+    <div id="levelIntroBox">
+      <div class="levelCard">
+        <h2>¡A VOLAR!</h2>
+        <p class="levelName">Nivel 14 · GLOBALIZACIÓN, SOBERANÍA Y ESTADO</p>
+        <p>Elegí la dificultad:</p>
+        <div class="difficultyChoices">
+          <button class="difficultyChoice" data-diff="facil">Fácil</button>
+          <button class="difficultyChoice selected" data-diff="medio">Medio</button>
+          <button class="difficultyChoice" data-diff="dificil">Difícil</button>
+        </div>
+        <button id="levelStartButton">¡A volar! 🐦</button>
+      </div>
+    </div>
+
+    <div id="questionBox">
+      <div class="overlayCard" id="questionCard">
+        <h2>¡Ups! El pajarito chocó</h2>
+        <p id="questionText"></p>
+
+        <div class="options">
+          <button class="optionBtn" data-index="0"></button>
+          <button class="optionBtn" data-index="1"></button>
+          <button class="optionBtn" data-index="2"></button>
+          <button class="optionBtn" data-index="3"></button>
+        </div>
+
+        <p id="answerFeedback" role="status" aria-live="polite"></p>
+
+        <p class="small">
+          Si contestás bien, el pajarito vuelve a volar. Si no, termina.
+        </p>
+      </div>
+    </div>
+
+    <div id="resumeBox">
+      <button id="resumeButton">¡Empieza a volar!</button>
+    </div>
+
+    <div id="levelCompleteBox">
+      <div class="levelCard">
+        <h2>¡FELICIDADES! ¡LLEGASTE A LA META!</h2>
+        <p class="levelName">Completaste el Nivel 14<br>GLOBALIZACIÓN, SOBERANÍA Y ESTADO</p>
+        <div class="lockedLevel">🌳 ¡Completaste los 14 niveles!</div>
+        <button id="backToLevelsButton">Volver al inicio</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="musicControls">
+    <button id="musicToggleBtn">🎵 Música: ON</button>
+    <button id="testSoundBtn">🔊 Probar sonido</button>
+  </div>
+
+  <script>
+    /*****************************************************
+     * 1) PREGUNTAS - EXACTAS Y EN EL ORDEN QUE PEDISTE
+     *****************************************************/
+    const level1QuestionsUnused = [
+        {
+          "text": "Según Abal Medina y Nejamkis, ¿por qué el Estado es un concepto central para la ciencia política?",
+          "options": [
+            "Porque toda organización social es estatal",
+            "Porque la política moderna se constituye principalmente alrededor del Estado",
+            "Porque el Estado controla todas las relaciones sociales",
+            "Porque toda forma de autoridad es burocrática"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Qué muestra el recorrido histórico sobre las primeras sociedades humanas?",
+          "options": [
+            "Que toda sociedad tuvo un Estado centralizado",
+            "Que el Estado apareció junto con el sufragio",
+            "Que la existencia del Estado no es una constante de la historia humana",
+            "Que las primeras sociedades poseían burocracias profesionales"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "Según Michael Mann, ¿qué actividad favoreció el surgimiento de las primeras civilizaciones?",
+          "options": [
+            "La agricultura aluvial y de regadío",
+            "El comercio financiero",
+            "La producción industrial",
+            "La navegación transoceánica"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿Cuáles son las cuatro fuentes del poder social identificadas por Michael Mann?",
+          "options": [
+            "Jurídica, religiosa, territorial y administrativa",
+            "Ideológica, económica, política y militar",
+            "Económica, cultural, tecnológica y burocrática",
+            "Política, electoral, parlamentaria y judicial"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Qué busca evitar el concepto de «matriz de poder social» empleado en el texto?",
+          "options": [
+            "La comparación entre procesos históricos",
+            "Las explicaciones reduccionistas que atribuyen todo a una única fuente de poder",
+            "El análisis de las relaciones económicas",
+            "La distinción entre poder político y militar"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "En la definición de Max Weber, ¿qué significa dominación?",
+          "options": [
+            "La utilización permanente de violencia",
+            "La eliminación de todo conflicto social",
+            "La probabilidad de encontrar obediencia a determinados mandatos",
+            "La aceptación unánime de un gobierno"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué relación establece el texto entre capitalismo y propiedad privada?",
+          "options": [
+            "El capitalismo vuelve innecesaria la intervención estatal",
+            "Las relaciones capitalistas requieren una garantía autoritaria de la propiedad privada",
+            "La propiedad privada elimina las diferencias de clase",
+            "El capitalismo reemplaza al Estado por el mercado"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Qué proceso político acompañó la formación del Estado moderno?",
+          "options": [
+            "La dispersión de los medios de coerción",
+            "La eliminación de la administración pública",
+            "La concentración de los medios de administración y coerción",
+            "La transferencia de la autoridad a organizaciones religiosas"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué caracteriza a la burocracia moderna en la perspectiva de Weber?",
+          "options": [
+            "La especialización profesional y el apego a reglas formales",
+            "La administración personal de los recursos públicos",
+            "La ausencia de procedimientos escritos",
+            "La elección popular de todos los funcionarios"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿Cuál de estos elementos integra la definición de Estado formulada por los autores?",
+          "options": [
+            "La ausencia de fronteras territoriales",
+            "El reclamo del monopolio de la coerción física legítima sobre un territorio",
+            "El control exclusivo de todas las fuentes del poder social",
+            "La obediencia voluntaria de toda la población"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "Según Oszlak, ¿qué significa que un Estado pueda externalizar su poder?",
+          "options": [
+            "Ser reconocido como unidad soberana en el sistema interestatal",
+            "Delegar sus funciones en empresas extranjeras",
+            "Extender sus leyes a otros países",
+            "Recaudar impuestos sobre el comercio exterior"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿En qué consiste la capacidad estatal de diferenciar su control?",
+          "options": [
+            "En construir símbolos de identidad nacional",
+            "En recibir el reconocimiento de otros Estados",
+            "En crear instituciones profesionalizadas capaces de obtener y administrar recursos",
+            "En permitir que cada grupo ejerza su propia coerción"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué transformación política fue central durante la consolidación de los Estados nacionales?",
+          "options": [
+            "La desaparición de la esfera pública",
+            "La ampliación de la representación y de los derechos políticos",
+            "La eliminación de la división de poderes",
+            "La restauración de las relaciones feudales"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Qué rasgo distingue al Estado de bienestar keynesiano?",
+          "options": [
+            "La reducción de sus funciones a la defensa exterior",
+            "La eliminación del gasto público",
+            "La intervención económica y la ampliación de políticas de integración social",
+            "La prohibición de regular los mercados"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué conclusión presenta el texto acerca del Estado en el nuevo orden global?",
+          "options": [
+            "La globalización eliminó definitivamente al Estado nacional",
+            "Los Estados conservaron intactas todas sus capacidades",
+            "El Estado fue reemplazado completamente por los bloques regionales",
+            "Los Estados continúan existiendo, pero sus capacidades y funciones se redefinen"
+          ],
+          "correctIndex": 3
+        },
+        {
+          "text": "¿Qué tres tipos de teoría distingue D’Auria?",
+          "options": [
+            "Jurídica, sociológica y económica",
+            "Explicativa, normativa y crítica",
+            "Antigua, moderna y contemporánea",
+            "Autoritaria, poliárquica y comunicativa"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Cuál fue el aporte principal de los sofistas al pensamiento político?",
+          "options": [
+            "Presentaron la política como una habilidad que podía enseñarse y aprenderse",
+            "Defendieron el gobierno de los filósofos",
+            "Crearon la teoría de la división de poderes",
+            "Separaron completamente la política de la retórica"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿Por qué la teoría política de Platón es predominantemente normativa?",
+          "options": [
+            "Porque se limita a describir las instituciones atenienses",
+            "Porque rechaza toda idea de justicia",
+            "Porque propone cómo debe organizarse una polis justa",
+            "Porque considera que cualquier gobierno es igualmente válido"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué busca Aristóteles al estudiar diferentes organizaciones políticas?",
+          "options": [
+            "La polis absolutamente perfecta, sin considerar la realidad",
+            "La mejor polis posible, atendiendo a condiciones reales",
+            "La eliminación del gobierno de las leyes",
+            "La subordinación de la política a la religión"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Qué importancia atribuye D’Auria a Maquiavelo?",
+          "options": [
+            "Sometió la política a la moral religiosa",
+            "Reemplazó la observación por modelos ideales",
+            "Estudió la política según su funcionamiento efectivo",
+            "Negó la existencia de conflictos políticos"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Cómo caracteriza D’Auria el universo político?",
+          "options": [
+            "Como un campo de influencias recíprocas entre actores con valores e intereses",
+            "Como una actividad exclusiva de los funcionarios estatales",
+            "Como un espacio en el que no existen conflictos",
+            "Como un conjunto compuesto únicamente por normas jurídicas"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿Qué elementos componen analíticamente una acción política?",
+          "options": [
+            "Territorio, población y gobierno",
+            "Valores o intereses, técnicas de influencia y objetivos",
+            "Legalidad, legitimidad y soberanía",
+            "Normas, sanciones y funcionarios"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "¿Cuándo es eficiente una acción política?",
+          "options": [
+            "Cuando alcanza el objetivo sin considerar sus costos",
+            "Cuando es moralmente aceptada por toda la sociedad",
+            "Cuando alcanza el objetivo de la manera menos costosa para el actor",
+            "Cuando utiliza exclusivamente argumentos"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué distingue al político de quien ejerce una influencia ocasional?",
+          "options": [
+            "El político procura acumular más influencia mediante la influencia que ya posee",
+            "El político nunca utiliza contraprestaciones",
+            "El político actúa siempre desde una institución estatal",
+            "El político carece de objetivos personales"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿Qué tres elementos conforman un orden político?",
+          "options": [
+            "Gobierno, mercado y sociedad",
+            "Territorio, soberanía y población",
+            "Régimen de poder, derecho y creencias políticas predominantes",
+            "Ejecutivo, Legislativo y Judicial"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Qué diferencia establece D’Auria entre influencia y poder?",
+          "options": [
+            "La influencia es una capacidad de los actores; el poder es una característica del orden social",
+            "La influencia es estatal y el poder es exclusivamente privado",
+            "La influencia es legítima y el poder es necesariamente ilegal",
+            "La influencia se basa en argumentos y el poder solamente en amenazas"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿Qué régimen de poder surge cuando predominan las contraprestaciones?",
+          "options": [
+            "Autoritario",
+            "Poliárquico",
+            "Teocrático",
+            "Comunicativo"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "text": "Según la distinción retomada de Habermas, ¿qué caracteriza a la acción comunicativa?",
+          "options": [
+            "La utilización de amenazas para producir obediencia",
+            "El intercambio de beneficios entre actores",
+            "La búsqueda de entendimiento mediante razones y argumentos",
+            "La imposición de los imperativos del mercado"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "text": "¿Cómo se relacionan el poder y el derecho dentro del orden político?",
+          "options": [
+            "El poder aporta efectividad al derecho y el derecho aporta legalidad al poder",
+            "El derecho elimina la necesidad de poder",
+            "El poder produce legitimidad y las creencias producen legalidad",
+            "El poder y el derecho funcionan de manera independiente"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "text": "¿En qué consiste la tarea de la teoría crítica?",
+          "options": [
+            "En formular opiniones negativas sobre cualquier gobierno",
+            "En establecer un modelo político obligatorio",
+            "En revelar los supuestos, prejuicios y condicionamientos históricos de una teoría o creencia",
+            "En rechazar toda explicación científica de la política"
+          ],
+          "correctIndex": 2
+        }
+      ];
+
+    const level2QuestionsUnused = [
+      { text: "Según Graña y Álvarez, ¿qué es el territorio del Estado?", options: [
+        "El conjunto de bienes inmuebles pertenecientes al gobierno",
+        "El espacio físico donde el Estado se asienta, actúa y ejerce su poder",
+        "La región habitada exclusivamente por sus nacionales",
+        "El ámbito definido solamente por fronteras naturales"
+      ], correctIndex: 1 },
+
+      { text: "¿Cuál es la doble significación jurídica del territorio señalada por Jellinek?", options: [
+        "Permite recaudar impuestos y explotar recursos naturales",
+        "Distingue el suelo del subsuelo",
+        "Sujeta a sus habitantes al poder estatal y excluye el poder de otros Estados",
+        "Separa a nacionales de extranjeros"
+      ], correctIndex: 2 },
+
+      { text: "¿Cómo caracterizan Graña y Álvarez la relación jurídica entre el Estado y su territorio?", options: [
+        "Como una relación de imperio ejercida sobre las personas",
+        "Como una propiedad privada directa sobre la tierra",
+        "Como una concesión temporal de la población",
+        "Como una relación exclusivamente económica"
+      ], correctIndex: 0 },
+
+      { text: "Para que la ocupación produzca la adquisición de un territorio, ¿qué condiciones se destacaron históricamente?", options: [
+        "Que sea secreta y transitoria",
+        "Que exista únicamente un acto simbólico",
+        "Que sea efectiva, pública y acompañada por el ánimo de poseer",
+        "Que sea autorizada por todos los Estados vecinos"
+      ], correctIndex: 2 },
+
+      { text: "¿Qué cambio introdujo la Carta de las Naciones Unidas respecto de la conquista territorial?", options: [
+        "La admitió únicamente en territorios despoblados",
+        "Prohibió la amenaza o el uso de la fuerza contra la integridad territorial o la independencia política",
+        "La reservó a los Estados con salida al mar",
+        "La convirtió en una forma de cesión"
+      ], correctIndex: 1 },
+
+      { text: "Cuando un río navegable sirve de límite, ¿qué representa el thalweg?", options: [
+        "La línea que une los puntos de mayor profundidad del canal",
+        "La línea que une las dos márgenes",
+        "La zona de pesca exclusiva",
+        "El antiguo cauce abandonado"
+      ], correctIndex: 0 },
+
+      { text: "¿Qué principio rige, según el texto, en la alta mar?", options: [
+        "La soberanía del Estado costero más próximo",
+        "La libertad para todas las naciones",
+        "La apropiación por el primer Estado que la ocupe",
+        "La prohibición de navegación y pesca"
+      ], correctIndex: 1 },
+
+      { text: "¿Hasta dónde se extiende el poder soberano del Estado costero en su mar territorial?", options: [
+        "Sólo sobre la superficie del agua",
+        "Sólo sobre el lecho y los recursos minerales",
+        "Sobre las aguas, el espacio aéreo, el lecho y el subsuelo, con el límite del tránsito inocuo",
+        "Únicamente sobre los barcos de su propia bandera"
+      ], correctIndex: 2 },
+
+      { text: "¿Cómo definen Graña y Álvarez a la población del Estado en sentido amplio?", options: [
+        "Como el conjunto de ciudadanos habilitados para votar",
+        "Como los nacionales que comparten un origen étnico",
+        "Como los seres humanos que conviven establemente en el territorio estatal",
+        "Como quienes ejercen funciones públicas"
+      ], correctIndex: 2 },
+
+      { text: "¿Qué diferencia existe entre nacionalidad y ciudadanía?", options: [
+        "La ciudadanía comprende a toda la población y la nacionalidad sólo a los electores",
+        "La nacionalidad vincula al individuo con el Estado; la ciudadanía habilita el ejercicio de derechos políticos",
+        "La ciudadanía corresponde a extranjeros y la nacionalidad a residentes",
+        "No existe diferencia jurídica entre ambas"
+      ], correctIndex: 1 },
+
+      { text: "¿Qué criterio aplica el ius soli para atribuir la nacionalidad de origen?", options: [
+        "La nacionalidad de los padres",
+        "El domicilio de los abuelos",
+        "El lugar del nacimiento",
+        "La voluntad expresada al alcanzar la mayoría de edad"
+      ], correctIndex: 2 },
+
+      { text: "¿Por qué la población puede ser simultáneamente sujeto y objeto del poder estatal?", options: [
+        "Porque todos los habitantes gobiernan de manera permanente",
+        "Porque una parte participa en el ejercicio del poder y toda la población es destinataria de la actividad estatal",
+        "Porque nacionales y extranjeros poseen idénticos derechos políticos",
+        "Porque la población es propietaria del territorio"
+      ], correctIndex: 1 },
+
+      { text: "Según la exposición basada en Heller, ¿cuándo un pueblo en sentido cultural se transforma en nación?", options: [
+        "Cuando alcanza una completa homogeneidad racial",
+        "Cuando obtiene necesariamente un territorio independiente",
+        "Cuando la conciencia de pertenencia se convierte en una voluntad política común",
+        "Cuando todos sus integrantes adquieren ciudadanía"
+      ], correctIndex: 2 },
+
+      { text: "¿Por qué Resnik considera insuficiente explicar todo el sistema político únicamente mediante el concepto de poder?", options: [
+        "Porque el poder sólo existe en las relaciones internacionales",
+        "Porque es ambiguo y aparece también en relaciones humanas que no son políticas",
+        "Porque el derecho ha eliminado toda relación de poder",
+        "Porque el poder sólo puede estudiarse desde la economía"
+      ], correctIndex: 1 },
+
+      { text: "¿Qué rasgo presenta la relación de poder entre el grupo gobernante y el resto de la población?", options: [
+        "Es necesariamente igualitaria",
+        "Es asimétrica: un grupo menor puede imponer su voluntad a otro mayor",
+        "Es exclusivamente contractual",
+        "Sólo existe cuando se aplica violencia física"
+      ], correctIndex: 1 },
+
+      { text: "¿Qué lugar ocupa la coerción en el ejercicio ordinario del poder político según Resnik?", options: [
+        "Debe aplicarse en todos los casos para producir obediencia",
+        "Es incompatible con la persuasión",
+        "Opera como posibilidad subyacente y se aplica como última instancia",
+        "Sólo corresponde a organizaciones privadas"
+      ], correctIndex: 2 },
+
+      { text: "¿Qué indica que un gobierno deba recurrir habitualmente a la coerción?", options: [
+        "Que su gestión ha aumentado su legitimidad",
+        "Que el sistema político alcanzó su máxima estabilidad",
+        "Que existe un proceso de pérdida de eficacia y una posible crisis",
+        "Que la población participa más activamente"
+      ], correctIndex: 2 },
+
+      { text: "¿Cómo relaciona Resnik la eficacia de las órdenes estatales con la legitimidad?", options: [
+        "La eficacia es irrelevante para la legitimidad",
+        "La ineficacia generalizada puede cuestionar la legitimidad de los órganos estatales",
+        "La legitimidad depende únicamente de la fuerza disponible",
+        "Toda orden legítima resulta automáticamente eficaz"
+      ], correctIndex: 1 },
+
+      { text: "¿Qué dos dimensiones reúne la soberanía en la explicación de Resnik?", options: [
+        "La propiedad del territorio y la ciudadanía",
+        "La superioridad del poder dentro del Estado y su independencia frente a poderes exteriores",
+        "La libertad económica y la igualdad jurídica",
+        "La persuasión y la propaganda"
+      ], correctIndex: 1 },
+
+      { text: "¿Qué distingue al Estado social de derecho del Estado liberal de derecho en el texto de Resnik?", options: [
+        "Elimina las garantías civiles y políticas",
+        "Reemplaza la Constitución por decisiones administrativas",
+        "Conserva las instituciones liberales e incorpora respuestas a problemas económicos, sociales y culturales",
+        "Renuncia a intervenir ante las desigualdades"
+      ], correctIndex: 2 }
+    ];
+
+    const level3QuestionsUnused = [
+      { text: "¿Qué significa la legitimidad política según el texto?", options: [
+        "La capacidad material del Estado para imponer cualquier decisión",
+        "El reconocimiento de los gobernados del derecho de los gobernantes a gobernar",
+        "La obediencia producida exclusivamente por el temor a una sanción",
+        "La vigencia formal de todas las normas dictadas por el gobierno"
+      ], correctIndex: 1 },
+
+      { text: "¿Cuáles son los tres elementos constitutivos de la legitimidad?", options: [
+        "Territorio, población y soberanía",
+        "Representación, burocracia y coerción",
+        "Consentimiento, demandas/derechos y conformidad con la ley",
+        "Elecciones, partidos políticos y división de poderes"
+      ], correctIndex: 2 },
+
+      { text: "¿Qué distingue una relación de autoridad de una relación de dominación-sumisión?", options: [
+        "La autoridad siempre elimina toda desigualdad entre las partes",
+        "La autoridad se sostiene en el consentimiento y no únicamente en la relación de fuerzas",
+        "La dominación-sumisión requiere necesariamente leyes escritas",
+        "La autoridad sólo puede existir cuando no hay obligación de obedecer"
+      ], correctIndex: 1 },
+
+      { text: "¿Cuándo una demanda social puede adquirir el carácter de derecho?", options: [
+        "Cuando es formulada por una sola persona ante una autoridad",
+        "Cuando resulta económicamente conveniente para el gobierno",
+        "Cuando es percibida como deseable, estable e inalienable por la mayoría de la sociedad",
+        "Cuando reemplaza automáticamente a todas las demandas anteriores"
+      ], correctIndex: 2 },
+
+      { text: "¿Por qué la legalidad formal no basta por sí sola para producir legitimidad?", options: [
+        "Porque los procedimientos jurídicos carecen de toda importancia política",
+        "Porque una ley sólo es legítima si además concuerda con las demandas/derechos sociales y contribuye a realizarlos",
+        "Porque la legitimidad depende exclusivamente de la eficacia económica",
+        "Porque toda decisión estatal necesita aprobación unánime"
+      ], correctIndex: 1 },
+
+      { text: "¿Qué exige una representación política legítima?", options: [
+        "Que los dirigentes encarnen y promuevan las demandas/derechos fundamentales de la comunidad",
+        "Que los gobernantes actúen sin límites una vez elegidos",
+        "Que los gobernados administren directamente todas las instituciones",
+        "Que los intereses privados de los dirigentes coincidan entre sí"
+      ], correctIndex: 0 },
+
+      { text: "¿Cómo se expresa la responsabilidad política de los gobernantes?", options: [
+        "Como libertad para atribuir los fracasos exclusivamente a terceros",
+        "Como una función de servicio, sujeta a límites y evaluable por sus resultados",
+        "Como la obligación de conservar el poder con independencia de sus resultados",
+        "Como el cumplimiento de promesas sin necesidad de concretarlas"
+      ], correctIndex: 1 },
+
+      { text: "¿Qué es el juicio o evaluación política de los gobernados?", options: [
+        "La comparación entre sus demandas/derechos fundamentales y lo efectivamente realizado por los gobernantes",
+        "La revisión judicial de todas las decisiones administrativas",
+        "La medición exclusiva de las necesidades materiales de cada individuo",
+        "La aceptación automática de toda acción realizada conforme a la ley"
+      ], correctIndex: 0 },
+
+      { text: "¿Qué sostiene la teoría de las élites al criticar el consentimiento?", options: [
+        "Que las mayorías gobiernan siempre de manera directa",
+        "Que una minoría controla el poder y los gobernados no intervienen de manera determinante",
+        "Que el consentimiento sólo existe cuando hay unanimidad",
+        "Que las élites desaparecen en los regímenes no democráticos"
+      ], correctIndex: 1 },
+
+      { text: "¿Por qué el texto rechaza que el consentimiento sea exclusivo de la democracia?", options: [
+        "Porque considera irrelevante la opinión de los gobernados",
+        "Porque todo régimen político obtiene necesariamente un consentimiento unánime",
+        "Porque puede ejercerse históricamente allí donde existe reciprocidad y reconocimiento mutuo de derechos y deberes",
+        "Porque identifica el consentimiento con la obediencia causada por el miedo"
+      ], correctIndex: 2 }
+    ];
+
+    const unit4Questions = [
+      { unit: 4, author: "Quijano", text: "Según Quijano, ¿qué proceso culmina en la globalización contemporánea?", options: [
+        "La desaparición de las clasificaciones sociales",
+        "El proceso iniciado con América y con el capitalismo colonial/moderno y eurocentrado",
+        "La sustitución del mercado mundial por economías regionales",
+        "La eliminación de la colonialidad después de las independencias"
+      ], correctIndex: 1 },
+
+      { unit: 4, author: "Quijano", text: "¿Cuáles fueron los dos ejes fundamentales del nuevo patrón de poder constituido con América?", options: [
+        "La soberanía nacional y la ciudadanía universal",
+        "La industrialización y el sufragio",
+        "La clasificación racial y la articulación de las formas de control del trabajo alrededor del capital y del mercado mundial",
+        "La religión cristiana y la división territorial"
+      ], correctIndex: 2 },
+
+      { unit: 4, author: "Quijano", text: "¿Cómo caracteriza Quijano la idea moderna de raza?", options: [
+        "Como una diferencia biológica demostrada científicamente",
+        "Como una construcción mental que naturalizó y legitimó relaciones coloniales de dominación",
+        "Como una clasificación anterior a la conquista de América",
+        "Como una categoría exclusivamente cultural y carente de efectos laborales"
+      ], correctIndex: 1 },
+
+      { unit: 4, author: "Quijano", text: "¿Por qué el capitalismo surgido con América constituye un patrón global de control del trabajo?", options: [
+        "Porque eliminó inmediatamente la esclavitud y la servidumbre",
+        "Porque estableció el salario como única forma de trabajo",
+        "Porque articuló esclavitud, servidumbre, reciprocidad, producción mercantil y salario alrededor del capital y del mercado mundial",
+        "Porque mantuvo cada forma de trabajo aislada de las demás"
+      ], correctIndex: 2 },
+
+      { unit: 4, author: "Quijano", text: "¿Qué relación se estableció entre raza y división del trabajo en el capitalismo colonial?", options: [
+        "Las identidades raciales fueron asociadas a lugares y formas específicas de control del trabajo",
+        "La clasificación racial dejó de influir cuando apareció el salario",
+        "Todas las poblaciones accedieron de igual manera al trabajo remunerado",
+        "La raza sólo determinó diferencias religiosas"
+      ], correctIndex: 0 },
+
+      { unit: 4, author: "Quijano", text: "¿Qué contribuyó decisivamente al eurocentramiento del capitalismo mundial?", options: [
+        "El aislamiento comercial de Europa respecto de América",
+        "El control europeo de metales, mercancías y trabajo no pagado procedentes de América",
+        "La ausencia de mercados previos en Asia y África",
+        "La prohibición del comercio en el Atlántico"
+      ], correctIndex: 1 },
+
+      { unit: 4, author: "Quijano", text: "¿Cómo operó la colonización sobre el conocimiento y la subjetividad de los pueblos colonizados?", options: [
+        "Preservó por igual todos sus saberes y formas de expresión",
+        "Se limitó a imponer nuevas fronteras territoriales",
+        "Expropió saberes útiles, reprimió formas propias de conocimiento e impuso parcialmente la cultura dominante",
+        "Reemplazó la dominación cultural por intercambios completamente recíprocos"
+      ], correctIndex: 2 },
+
+      { unit: 4, author: "Quijano", text: "¿Cuáles son los dos mitos fundantes de la versión eurocéntrica de la modernidad?", options: [
+        "La igualdad racial y la pluralidad de trayectorias históricas",
+        "La historia como trayectoria culminante en Europa y las diferencias Europa/no-Europa entendidas como naturales",
+        "La centralidad histórica de América y la igualdad entre saberes",
+        "La inexistencia del capitalismo y del Estado-nación"
+      ], correctIndex: 1 },
+
+      { unit: 4, author: "Quijano", text: "¿Qué instituciones hegemonizan, respectivamente, el trabajo, el sexo, la autoridad y la intersubjetividad en el patrón mundial de poder?", options: [
+        "La empresa capitalista, la familia burguesa, el Estado-nación y el eurocentrismo",
+        "El sindicato, la comunidad, el municipio y la tradición",
+        "El mercado local, la familia extensa, el imperio y la religión",
+        "La fábrica estatal, la escuela, el parlamento y la ciencia"
+      ], correctIndex: 0 },
+
+      { unit: 4, author: "Quijano", text: "¿Por qué la modernidad es ambigua y contradictoria para Quijano?", options: [
+        "Porque no produjo cambios materiales ni subjetivos",
+        "Porque combina un horizonte de liberación y democratización con relaciones de dominación y explotación",
+        "Porque sólo afectó a Europa Occidental",
+        "Porque eliminó todo conflicto de intereses sociales"
+      ], correctIndex: 1 },
+
+      { unit: 4, author: "Dussel", text: "¿Qué cuestiona Dussel de la secuencia Grecia-Roma-Europa?", options: [
+        "Que incluye demasiadas culturas no europeas",
+        "Que es una construcción ideológica posterior que presenta como unilineal una continuidad inexistente",
+        "Que desconoce la existencia del Imperio romano occidental",
+        "Que atribuye a Grecia un origen exclusivamente africano"
+      ], correctIndex: 1 },
+
+      { unit: 4, author: "Dussel", text: "¿Cómo define Dussel el primer concepto, eurocéntrico, de Modernidad?", options: [
+        "Como un proceso mundial iniciado por la conquista de América",
+        "Como una emancipación racional originada en fenómenos internos de Europa",
+        "Como la expansión del mundo musulmán hacia Occidente",
+        "Como la crítica latinoamericana del colonialismo"
+      ], correctIndex: 1 },
+
+      { unit: 4, author: "Dussel", text: "¿Qué caracteriza la segunda concepción, mundial, de la Modernidad?", options: [
+        "El comienzo de una Historia Mundial desde 1492, con Europa convertida en centro y las demás culturas en periferia",
+        "La autonomía completa de todos los sistemas culturales después del siglo XV",
+        "La centralidad europea existente desde la Grecia clásica",
+        "El inicio de la Modernidad con la Revolución francesa exclusivamente"
+      ], correctIndex: 0 },
+
+      { unit: 4, author: "Dussel", text: "¿Por qué Dussel considera a España la primera nación moderna?", options: [
+        "Porque inició la Revolución Industrial",
+        "Porque unificó el Estado y abrió la primera etapa moderna del mercantilismo mundial",
+        "Porque reemplazó a Inglaterra como potencia en 1945",
+        "Porque rechazó la expansión atlántica"
+      ], correctIndex: 1 },
+
+      { unit: 4, author: "Dussel", text: "¿Qué expresa la afirmación de que el ego conquiro precedió al ego cogito?", options: [
+        "Que la reflexión filosófica europea fue anterior a toda expansión colonial",
+        "Que la experiencia práctica de conquista y dominación precedió a la formulación filosófica del sujeto moderno",
+        "Que la conquista fue consecuencia directa de Descartes",
+        "Que el pensamiento moderno se originó fuera de toda relación de poder"
+      ], correctIndex: 1 },
+
+      { unit: 4, author: "Dussel", text: "¿Qué lugar ocupa América Latina en el surgimiento de la Modernidad según Dussel?", options: [
+        "Permanece fuera de la Modernidad hasta el siglo XX",
+        "Es únicamente receptora tardía de instituciones europeas",
+        "Ingresa desde 1492 como su otra cara dominada, explotada y encubierta",
+        "Constituye el centro económico de la segunda Revolución Industrial"
+      ], correctIndex: 2 },
+
+      { unit: 4, author: "Dussel", text: "¿En qué consiste el eurocentrismo de la Modernidad?", options: [
+        "En distinguir cuidadosamente la universalidad de la hegemonía europea",
+        "En confundir una universalidad abstracta con la mundialidad concreta hegemonizada por Europa",
+        "En negar que Europa haya ocupado una posición central",
+        "En reconocer como equivalentes todas las trayectorias culturales"
+      ], correctIndex: 1 },
+
+      { unit: 4, author: "Dussel", text: "¿Cómo funciona el mito civilizatorio de la Modernidad respecto de sus víctimas?", options: [
+        "Reconoce desde el comienzo su inocencia y autonomía",
+        "Presenta la violencia como necesaria, atribuye culpa al dominado y declara inevitables sus sacrificios",
+        "Elimina la idea de superioridad cultural",
+        "Rechaza cualquier forma de guerra colonial"
+      ], correctIndex: 1 },
+
+      { unit: 4, author: "Dussel", text: "¿Qué propone la Trans-Modernidad?", options: [
+        "Regresar sin cambios a las sociedades premodernas",
+        "Negar toda forma de racionalidad y de emancipación",
+        "Co-realizar el núcleo racional emancipador de la Modernidad y su alteridad negada en un proyecto mundial de liberación",
+        "Completar el proyecto europeo sin participación de la periferia"
+      ], correctIndex: 2 },
+
+      { unit: 4, author: "Dussel", text: "¿Qué diferencia al proyecto trans-moderno de los proyectos premoderno, antimoderno y posmoderno?", options: [
+        "Su defensa de la superioridad europea",
+        "Su rechazo de las víctimas como sujetos políticos",
+        "Su incorporación crítica de la razón emancipadora y de la alteridad, negando el carácter mítico y violento de la Modernidad",
+        "Su propuesta de restaurar íntegramente el pasado"
+      ], correctIndex: 2 }
+    ];
+
+    const reviewQuestions = [
+      { unit: 1, text: "¿Qué muestra el recorrido histórico sobre las primeras sociedades humanas?", options: [
+        "Que toda sociedad tuvo un Estado centralizado", "Que el Estado apareció junto con el sufragio",
+        "Que la existencia del Estado no es una constante de la historia humana", "Que las primeras sociedades poseían burocracias profesionales"
+      ], correctIndex: 2 },
+      { unit: 1, text: "En la definición de Max Weber, ¿qué significa dominación?", options: [
+        "La utilización permanente de violencia", "La eliminación de todo conflicto social",
+        "La probabilidad de encontrar obediencia a determinados mandatos", "La aceptación unánime de un gobierno"
+      ], correctIndex: 2 },
+      { unit: 1, text: "¿Qué caracteriza a la burocracia moderna en la perspectiva de Weber?", options: [
+        "La especialización profesional y el apego a reglas formales", "La administración personal de los recursos públicos",
+        "La ausencia de procedimientos escritos", "La elección popular de todos los funcionarios"
+      ], correctIndex: 0 },
+      { unit: 1, text: "¿En qué consiste la capacidad estatal de diferenciar su control?", options: [
+        "En construir símbolos de identidad nacional", "En recibir el reconocimiento de otros Estados",
+        "En crear instituciones profesionalizadas capaces de obtener y administrar recursos", "En permitir que cada grupo ejerza su propia coerción"
+      ], correctIndex: 2 },
+
+      { unit: 2, text: "¿Cuál es la doble significación jurídica del territorio señalada por Jellinek?", options: [
+        "Permite recaudar impuestos y explotar recursos naturales", "Distingue el suelo del subsuelo",
+        "Sujeta a sus habitantes al poder estatal y excluye el poder de otros Estados", "Separa a nacionales de extranjeros"
+      ], correctIndex: 2 },
+      { unit: 2, text: "¿Cómo definen Graña y Álvarez a la población del Estado en sentido amplio?", options: [
+        "Como el conjunto de ciudadanos habilitados para votar", "Como los nacionales que comparten un origen étnico",
+        "Como los seres humanos que conviven establemente en el territorio estatal", "Como quienes ejercen funciones públicas"
+      ], correctIndex: 2 },
+      { unit: 2, text: "¿Qué lugar ocupa la coerción en el ejercicio ordinario del poder político según Resnik?", options: [
+        "Debe aplicarse en todos los casos", "Es incompatible con la persuasión",
+        "Opera como posibilidad subyacente y se aplica como última instancia", "Sólo corresponde a organizaciones privadas"
+      ], correctIndex: 2 },
+      { unit: 2, text: "¿Qué dos dimensiones reúne la soberanía en la explicación de Resnik?", options: [
+        "La propiedad del territorio y la ciudadanía", "La superioridad del poder interno y su independencia frente a poderes exteriores",
+        "La libertad económica y la igualdad jurídica", "La persuasión y la propaganda"
+      ], correctIndex: 1 },
+
+      { unit: 3, text: "¿Qué significa la legitimidad política según el texto?", options: [
+        "La capacidad material de imponer cualquier decisión", "El reconocimiento de los gobernados del derecho de los gobernantes a gobernar",
+        "La obediencia producida exclusivamente por el temor", "La vigencia formal de todas las normas"
+      ], correctIndex: 1 },
+      { unit: 3, text: "¿Cuáles son los tres elementos constitutivos de la legitimidad?", options: [
+        "Territorio, población y soberanía", "Representación, burocracia y coerción",
+        "Consentimiento, demandas/derechos y conformidad con la ley", "Elecciones, partidos y división de poderes"
+      ], correctIndex: 2 },
+      { unit: 3, text: "¿Por qué la legalidad formal no basta por sí sola para producir legitimidad?", options: [
+        "Porque los procedimientos carecen de importancia", "Porque la ley debe concordar con demandas/derechos sociales y contribuir a realizarlos",
+        "Porque depende exclusivamente de la economía", "Porque toda decisión necesita unanimidad"
+      ], correctIndex: 1 },
+      { unit: 3, text: "¿Qué es el juicio o evaluación política de los gobernados?", options: [
+        "La comparación entre sus demandas/derechos y lo realizado por los gobernantes", "La revisión judicial de toda decisión",
+        "La medición exclusiva de necesidades materiales", "La aceptación automática de toda ley"
+      ], correctIndex: 0 }
+    ];
+
+    const unit5Questions = [
+      { unit: 5, author: "Ruiz Miguel", text: "¿Con qué tradición filosófica nacen la teoría de la justicia y el concepto de Derecho natural?", options: [
+        "Con la escolástica medieval", "Con la filosofía griega", "Con el constitucionalismo moderno", "Con el positivismo jurídico"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Ruiz Miguel", text: "En Aristóteles, ¿qué significa afirmar que el ser humano es un animal social o político?", options: [
+        "Que puede vivir plenamente fuera de toda comunidad", "Que la sociabilidad, la razón y la moralidad forman parte de su realización natural", "Que sólo la fuerza funda la ciudad", "Que la política es una actividad reservada a los gobernantes"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Ruiz Miguel", text: "¿Qué diferencia hay entre los sentidos fáctico y teleológico de naturaleza en Aristóteles?", options: [
+        "El fáctico alude a lo regular o típico y el teleológico a la finalidad o al bien", "El fáctico se refiere a la ley escrita y el teleológico a la costumbre", "El fáctico es religioso y el teleológico económico", "No existe diferencia entre ambos sentidos"
+      ], correctIndex: 0 },
+      { unit: 5, author: "Ruiz Miguel", text: "¿Qué forma de gobierno prefería Cicerón?", options: [
+        "La democracia popular pura", "La monarquía absoluta", "Un gobierno mixto con elementos monárquicos, aristocráticos y populares", "La supresión de las instituciones republicanas"
+      ], correctIndex: 2 },
+      { unit: 5, author: "Ruiz Miguel", text: "¿Qué cambio introduce el cristianismo respecto del estoicismo?", options: [
+        "Elimina toda idea de igualdad humana", "Teologiza el pensamiento y distingue entre razón y fe", "Niega la existencia de una ley natural", "Sustituye la moral por el comercio"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Ruiz Miguel", text: "¿Qué fue el Corpus iuris civilis de Justiniano?", options: [
+        "Una asamblea popular griega", "Una recopilación jurídica integrada, entre otras obras, por el Digesto, las Instituciones, el Código y las Novelas", "Un tratado medieval sobre el poder papal", "La primera constitución liberal"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Ruiz Miguel", text: "¿Qué dos poderes distinguía la doctrina medieval de las dos espadas?", options: [
+        "El legislativo y el judicial", "El municipal y el imperial", "La autoridad espiritual de la Iglesia y la autoridad temporal de los reyes", "El económico y el militar"
+      ], correctIndex: 2 },
+      { unit: 5, author: "Ruiz Miguel", text: "¿Cómo define Tomás de Aquino la ley?", options: [
+        "Como toda orden impuesta por la fuerza", "Como una ordenación de la razón dirigida al bien común y promulgada por quien cuida la comunidad", "Como una costumbre privada sin autoridad", "Como la voluntad personal del gobernante"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Ruiz Miguel", text: "¿Qué clases principales comprende la ley positiva en Tomás de Aquino?", options: [
+        "La ley divina y la ley humana", "La ley natural y la ley eterna", "La ley penal y la ley civil", "La ley escrita y la ley secreta"
+      ], correctIndex: 0 },
+      { unit: 5, author: "Ruiz Miguel", text: "¿Qué efecto podía tener la costumbre respecto de la ley humana en la concepción tomista?", options: [
+        "Ninguno, porque sólo valía la ley escrita", "Podía desarrollar la ley e incluso derogarla en determinadas condiciones", "Sólo podía confirmar leyes religiosas", "Podía reemplazar siempre la autoridad política"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Ruiz Miguel", text: "¿Qué expresa la fórmula medieval según la cual no parece ley la que no es justa?", options: [
+        "La superioridad del Derecho natural sobre la ley injusta", "La obediencia absoluta a toda orden", "La separación total entre Derecho y justicia", "La prioridad de la costumbre comercial"
+      ], correctIndex: 0 },
+      { unit: 5, author: "Ruiz Miguel", text: "Según Marsilio de Padua, ¿dónde se encuentra el fundamento del poder político?", options: [
+        "En el papa exclusivamente", "En la nobleza hereditaria", "En el pueblo o totalidad de los ciudadanos, o en su parte prevalente", "En una autoridad extranjera"
+      ], correctIndex: 2 },
+      { unit: 5, author: "Da Silveira", text: "¿Cuáles fueron los dos cargos formales formulados contra Sócrates?", options: [
+        "Traición militar y robo", "Impiedad y corrupción de los jóvenes", "Evasión de impuestos y desacato", "Conspiración monárquica y violencia"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Da Silveira", text: "¿En qué consistía principalmente el método de Sócrates?", options: [
+        "En transmitir respuestas definitivas por escrito", "En pedir definiciones y mostrar mediante preguntas sus consecuencias contradictorias", "En enseñar retórica a cambio de dinero", "En apelar siempre a la tradición como prueba suficiente"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Da Silveira", text: "¿Por qué Sócrates rechazó huir de la cárcel?", options: [
+        "Porque desconocía la condena", "Porque consideraba que respetar la decisión de la ciudad era un deber del ciudadano", "Porque sus amigos se negaron a ayudarlo", "Porque esperaba ser nombrado gobernante"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Da Silveira", text: "¿Qué tensión encarna Sócrates según Da Silveira?", options: [
+        "La oposición entre comercio y agricultura", "La búsqueda de libertad interior y la fidelidad a las leyes de su ciudad", "El conflicto entre monarquía y feudalismo", "La diferencia entre riqueza y pobreza"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Da Silveira", text: "¿Cuál fue el gran proyecto intelectual de Tomás de Aquino?", options: [
+        "Separar definitivamente la fe del conocimiento", "Reconciliar la fe católica con el conocimiento racional del mundo", "Prohibir el estudio de los filósofos griegos", "Reemplazar la teología por la política"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Da Silveira", text: "¿Qué principio del trabajo de Tomás destaca Da Silveira sobre razón y fe?", options: [
+        "La fe es enemiga de la razón", "Donde se puede entender, es mejor entender que creer, y la razón puede fortalecer la fe", "Sólo la iluminación divina permite conocer el mundo", "La razón debe limitarse a repetir autoridades"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Da Silveira", text: "¿Qué filósofo recuperó Tomás de Aquino para renovar el pensamiento cristiano occidental?", options: [
+        "Epicuro", "Aristóteles", "Maquiavelo", "Descartes"
+      ], correctIndex: 1 },
+      { unit: 5, author: "Da Silveira", text: "¿Qué estructura se repite en los artículos de la Summa Theologica?", options: [
+        "Relato, poema y conclusión", "Problema, objeciones, argumento de autoridad, respuestas y solución", "Ley, sentencia y apelación", "Biografía, cronología y bibliografía"
+      ], correctIndex: 1 }
+    ];
+
+    // Cuatro preguntas de cada unidad anterior permiten acumular saber sin desplazar
+    // las veinte preguntas nuevas del nivel.
+    const reviewQuestionsLevel5 = [
+      ...reviewQuestions,
+      ...unit4Questions.slice(0, 4)
+    ];
+
+    const unit6Questions = [
+      { unit: 6, author: "Varnagy", text: "¿Qué transformaciones políticas acompañaron la transición europea del feudalismo al capitalismo?", options: [
+        "La expansión de la fragmentación feudal", "El fortalecimiento de las monarquías absolutas y una creciente secularización política", "La desaparición de las ciudades y del comercio", "La unificación política inmediata de Italia"
+      ], correctIndex: 1 },
+      { unit: 6, author: "Varnagy", text: "¿Qué distinguía a la Italia de Maquiavelo frente a Francia, España e Inglaterra?", options: [
+        "Su temprana unidad nacional", "La ausencia de ciudades comerciales", "Su división en múltiples unidades políticas y la intervención de potencias extranjeras", "Su aislamiento de los conflictos europeos"
+      ], correctIndex: 2 },
+      { unit: 6, author: "Varnagy", text: "¿Qué sentido moderno atribuye Varnagy al término Estado en Maquiavelo?", options: [
+        "Una mera situación personal del gobernante", "Un poder central soberano e independiente al que se subordinan las autoridades medievales", "Una comunidad exclusivamente religiosa", "Una alianza ocasional entre ciudades"
+      ], correctIndex: 1 },
+      { unit: 6, author: "Varnagy", text: "¿Cómo relaciona Maquiavelo coerción y consenso en el ejercicio del poder?", options: [
+        "Considera suficiente la persuasión", "Rechaza siempre el uso de la fuerza", "Entiende que el gobierno necesita fuerza, pero también apoyo y aceptación popular", "Reduce el Estado a la violencia sin límites"
+      ], correctIndex: 2 },
+      { unit: 6, author: "Varnagy", text: "¿Cuándo puede considerarse bien empleada la crueldad según la interpretación de Varnagy?", options: [
+        "Cuando se repite permanentemente para infundir odio", "Cuando es controlada, evita males mayores y contribuye al orden y al bienestar del pueblo", "Cuando sirve al interés privado del príncipe", "Cuando elimina toda posibilidad de consenso"
+      ], correctIndex: 1 },
+      { unit: 6, author: "Varnagy", text: "¿Por qué no debe leerse El Príncipe de manera aislada?", options: [
+        "Porque Maquiavelo lo dejó inconcluso", "Porque los Discursos contienen el núcleo republicano de su pensamiento y ambas obras se complementan", "Porque sólo trata cuestiones religiosas", "Porque fue escrito antes de toda experiencia política"
+      ], correctIndex: 1 },
+      { unit: 6, author: "Varnagy", text: "¿Qué forma de gobierno considera Maquiavelo más firme y estable?", options: [
+        "La monarquía absoluta", "La aristocracia pura", "El gobierno popular sin controles", "El gobierno mixto, donde los poderes se equilibran y vigilan entre sí"
+      ], correctIndex: 3 },
+      { unit: 6, author: "Varnagy", text: "¿Qué relación establece Maquiavelo entre conflicto y libertad republicana?", options: [
+        "Todo conflicto destruye necesariamente la república", "Los conflictos canalizados institucionalmente pueden producir leyes favorables a la libertad", "La libertad exige eliminar la participación popular", "Los tumultos sólo benefician a los nobles"
+      ], correctIndex: 1 },
+      { unit: 6, author: "Varnagy", text: "¿Por qué el pueblo aparece como guardián de la libertad?", options: [
+        "Porque desea dominar a los nobles", "Porque su deseo principal es no ser dominado", "Porque carece de intereses políticos", "Porque obedece siempre sin discutir"
+      ], correctIndex: 1 },
+      { unit: 6, author: "Varnagy", text: "¿Qué significa afirmar la autonomía de la política en Maquiavelo?", options: [
+        "Que la política no tiene consecuencias morales", "Que posee características y regularidades propias que deben estudiarse a partir de la realidad efectiva", "Que debe subordinarse enteramente a la teología", "Que sólo puede comprenderse mediante ideales abstractos"
+      ], correctIndex: 1 },
+
+      { unit: 6, author: "Todorov", text: "¿Por qué Todorov dice que la Ilustración fue una época de síntesis más que de innovación radical?", options: [
+        "Porque rechazó todas las ideas anteriores", "Porque articuló ideas de procedencias diversas que antes estaban en conflicto", "Porque sus autores pensaban exactamente lo mismo", "Porque se limitó a cuestiones científicas"
+      ], correctIndex: 1 },
+      { unit: 6, author: "Todorov", text: "¿Cuáles son las tres ideas que Todorov sitúa en la base del proyecto ilustrado?", options: [
+        "Tradición, obediencia y jerarquía", "Autonomía, finalidad humana de los actos y universalidad", "Fe, monarquía y conquista", "Ciencia, riqueza y expansión territorial"
+      ], correctIndex: 1 },
+      { unit: 6, author: "Todorov", text: "¿Qué dos facetas integran la autonomía ilustrada?", options: [
+        "Emancipación frente a tutelas externas y construcción de leyes propias", "Revelación religiosa y obediencia política", "Aislamiento individual y rechazo de toda norma", "Tradición heredada y autoridad sobrenatural"
+      ], correctIndex: 0 },
+      { unit: 6, author: "Todorov", text: "¿Qué fuentes legítimas reconoce la Ilustración para el conocimiento?", options: [
+        "La magia y la revelación", "La tradición y el prestigio", "La razón y la experiencia", "La autoridad política y la costumbre"
+      ], correctIndex: 2 },
+      { unit: 6, author: "Todorov", text: "¿Qué alcance tiene la crítica ilustrada a la religión según Todorov?", options: [
+        "Obliga a todos los individuos a abandonar sus creencias", "Rechaza la subordinación política a preceptos legitimados sólo por la tradición y separa religión y Estado", "Prohíbe toda experiencia de trascendencia", "Convierte el ateísmo en religión oficial"
+      ], correctIndex: 1 },
+      { unit: 6, author: "Todorov", text: "¿Qué dos principios políticos se desprenden de la autonomía ilustrada?", options: [
+        "El derecho divino y la censura", "La soberanía popular y una esfera de libertad individual frente al poder estatal", "La supremacía eclesiástica y la monarquía", "La guerra permanente y el aislamiento"
+      ], correctIndex: 1 },
+      { unit: 6, author: "Todorov", text: "¿Cuál es la finalidad de la acción pública en el humanismo ilustrado?", options: [
+        "La salvación religiosa de los súbditos", "La gloria personal del soberano", "El bienestar de los ciudadanos y la felicidad humana", "La expansión territorial del Estado"
+      ], correctIndex: 2 },
+      { unit: 6, author: "Todorov", text: "¿Cómo limita la universalidad el ejercicio de la libertad?", options: [
+        "Reconociendo derechos inalienables a todo ser humano", "Imponiendo una cultura única", "Reservando los derechos a los ciudadanos ricos", "Subordinando la integridad física a razones de Estado"
+      ], correctIndex: 0 },
+      { unit: 6, author: "Todorov", text: "¿Qué diferencia establece Todorov entre progreso y perfectibilidad?", options: [
+        "Son conceptos idénticos", "La perfectibilidad es capacidad de mejorar, pero no garantiza avances lineales ni resultados positivos", "El progreso depende únicamente de la tecnología", "La perfectibilidad asegura la perfección moral"
+      ], correctIndex: 1 },
+      { unit: 6, author: "Todorov", text: "¿Qué propone Todorov hacer hoy con la herencia de la Ilustración?", options: [
+        "Repetir literalmente todas las ideas del siglo XVIII", "Abandonarla por completo", "Refundamentarla mediante una revisión crítica de sus consecuencias deseadas y no deseadas", "Reducirla a un programa científico"
+      ], correctIndex: 2 }
+    ];
+
+    // El repaso acumulativo conserva cuatro preguntas de cada unidad anterior.
+    const reviewQuestionsLevel6 = [
+      ...reviewQuestionsLevel5,
+      ...unit5Questions.slice(0, 4)
+    ];
+
+    const unit7Questions = [
+      { unit: 7, author: "Bobbio", text: "¿Por qué Bobbio afirma que reconstruir una teoría marxiana del Estado exige cautela?", options: [
+        "Porque Marx rechazó escribir sobre política", "Porque Marx no dejó una obra sistemática sobre el Estado y sus ideas están dispersas en textos de distintas épocas", "Porque los escritos de Marx sólo analizan sociedades antiguas", "Porque Marx consideraba que el Estado era inmutable"
+      ], correctIndex: 1 },
+      { unit: 7, author: "Bobbio", text: "¿Qué inversión de la filosofía política de Hegel realiza Marx?", options: [
+        "Sostiene que el Estado crea desde cero a la familia", "Reemplaza la sociedad civil por la religión", "Considera a la familia y a la sociedad civil presupuestos reales del Estado, y no simples productos de la Idea estatal", "Afirma que las instituciones políticas no tienen historia"
+      ], correctIndex: 2 },
+      { unit: 7, author: "Bobbio", text: "¿Qué significa considerar al Estado una superestructura?", options: [
+        "Que la organización política condiciona por completo la producción", "Que las formas jurídicas y políticas se levantan sobre relaciones materiales y económicas que las condicionan", "Que el Estado está por encima de todo conflicto social", "Que la economía carece de efectos políticos"
+      ], correctIndex: 1 },
+      { unit: 7, author: "Bobbio", text: "¿Por qué la emancipación política no equivale todavía a la emancipación humana?", options: [
+        "Porque la igualdad jurídica puede coexistir con desigualdades y antagonismos de la sociedad civil", "Porque la ciudadanía elimina automáticamente la propiedad privada", "Porque sólo puede haber libertad sin derechos políticos", "Porque toda revolución política suprime las clases sociales"
+      ], correctIndex: 0 },
+      { unit: 7, author: "Bobbio", text: "¿Cómo caracteriza Marx al Estado burgués en la reconstrucción de Bobbio?", options: [
+        "Como árbitro siempre neutral entre las clases", "Como comunidad ajena a las relaciones económicas", "Como poder organizado que garantiza el dominio y los intereses de la clase dominante", "Como institución destinada a eliminar de inmediato la propiedad privada"
+      ], correctIndex: 2 },
+      { unit: 7, author: "Bobbio", text: "¿Qué revela el bonapartismo sobre la autonomía aparente del Estado?", options: [
+        "Que el Ejecutivo puede parecer independiente sin dejar de preservar el orden social burgués", "Que la burocracia elimina toda base social del poder", "Que el Estado deja de cumplir funciones de clase", "Que el parlamento domina necesariamente al Ejecutivo"
+      ], correctIndex: 0 },
+      { unit: 7, author: "Bobbio", text: "¿Qué enseñanza extrae Marx de la Comuna de París respecto de la máquina estatal burguesa?", options: [
+        "Debe conservarse sin cambios", "Debe ser ocupada por una nueva élite administrativa", "No basta con transferirla: debe ser destruida y reemplazada por el autogobierno de los productores", "Debe entregarse al ejército permanente"
+      ], correctIndex: 2 },
+      { unit: 7, author: "Bobbio", text: "¿Cuál de estas medidas corresponde al modelo político de la Comuna?", options: [
+        "Funcionarios vitalicios y ejército profesional", "Representantes elegibles y revocables, supresión del ejército permanente y unión de funciones legislativas y ejecutivas", "Separación completa entre electores y representantes", "Centralización burocrática sin control popular"
+      ], correctIndex: 1 },
+      { unit: 7, author: "Bobbio", text: "¿Qué función cumple la dictadura del proletariado en Marx?", options: [
+        "Es una forma definitiva de Estado", "Es la restauración del Estado burgués", "Es una transición entre la sociedad capitalista y la sociedad sin clases", "Es la supresión inmediata de toda organización política"
+      ], correctIndex: 2 },
+      { unit: 7, author: "Bobbio", text: "¿Cómo se diferencia la propuesta marxiana tanto de la socialdemocracia como del anarquismo?", options: [
+        "Propone administrar indefinidamente el Estado existente", "Plantea destruir el Estado burgués, establecer una transición proletaria y crear las condiciones para la extinción del Estado", "Rechaza toda transformación revolucionaria", "Defiende la desaparición inmediata de cualquier autoridad antes de cambiar las clases sociales"
+      ], correctIndex: 1 },
+
+      { unit: 7, author: "González", text: "¿Para qué utiliza González el Prólogo de 1859 en su recorrido por la obra de Marx?", options: [
+        "Para reconstruir críticamente el itinerario intelectual que el propio Marx narró sobre su formación", "Para demostrar que Marx abandonó toda preocupación histórica", "Para estudiar exclusivamente su vida familiar", "Para negar la relación entre biografía y teoría"
+      ], correctIndex: 0 },
+      { unit: 7, author: "González", text: "¿Qué le muestran a Marx los debates sobre el robo de leña en la Gaceta Renana?", options: [
+        "Que las leyes son siempre neutrales", "Que el derecho de los propietarios podía imponerse sobre los usos consuetudinarios de los campesinos pobres", "Que la pobreza tenía causas exclusivamente naturales", "Que el Estado prusiano protegía por igual todos los intereses"
+      ], correctIndex: 1 },
+      { unit: 7, author: "González", text: "¿Qué significa que la filosofía debe realizarse en el mundo?", options: [
+        "Que debe limitarse a interpretar textos antiguos", "Que las ideas sólo adquieren sentido pleno al vincularse con la práctica y con sujetos capaces de transformar la realidad", "Que la acción política debe prescindir de toda reflexión", "Que el mundo depende únicamente de la conciencia individual"
+      ], correctIndex: 1 },
+      { unit: 7, author: "González", text: "¿Qué tres tradiciones nacionales confluyen en la formación del pensamiento de Marx?", options: [
+        "La filosofía alemana, la política emancipatoria francesa y la economía inglesa", "La religión inglesa, la economía alemana y el arte francés", "La jurisprudencia romana, la teología española y la ciencia rusa", "La política alemana, la filosofía inglesa y la economía francesa"
+      ], correctIndex: 0 },
+      { unit: 7, author: "González", text: "¿Qué vínculo establece el joven Marx entre filosofía y proletariado?", options: [
+        "La filosofía aporta orientación crítica y el proletariado aparece como fuerza práctica de la emancipación humana", "La filosofía sustituye por completo la acción colectiva", "El proletariado sólo puede lograr una emancipación jurídica", "Ambos deben mantenerse fuera de la política"
+      ], correctIndex: 0 },
+      { unit: 7, author: "González", text: "¿Qué expresa el trabajo alienado en los Manuscritos de 1844?", options: [
+        "La libre realización del trabajador en su producto", "La separación del trabajador respecto de su producto, de su actividad y de su propia humanidad", "La desaparición del antagonismo entre capital y trabajo", "La apropiación colectiva inmediata de la producción"
+      ], correctIndex: 1 },
+      { unit: 7, author: "González", text: "¿Qué contradicción histórica atribuye el Manifiesto Comunista a la burguesía?", options: [
+        "Conserva intactas las formas de producción y elimina al proletariado", "Revoluciona las fuerzas productivas y, al mismo tiempo, produce la clase que puede convertirse en su sepulturera", "Impide la expansión mundial del capitalismo", "Renuncia voluntariamente al poder político"
+      ], correctIndex: 1 },
+      { unit: 7, author: "González", text: "¿Qué problema señala Marx cuando afirma que las revoluciones toman nombres y ropajes del pasado?", options: [
+        "Que toda memoria histórica impide actuar", "Que los actores pueden interpretar una situación nueva mediante lenguajes heredados que ocultan su novedad", "Que las revoluciones repiten exactamente los mismos hechos", "Que las ideas carecen de efectos sobre la acción"
+      ], correctIndex: 1 },
+      { unit: 7, author: "González", text: "¿Cómo funciona la representación política del bonapartismo en El 18 Brumario?", options: [
+        "Hace visibles de manera transparente todos los intereses de clase", "Simula representar al conjunto social mientras encubre divisiones de clase y fortalece un aparato estatal centralizado", "Elimina la burocracia y la autoridad ejecutiva", "Entrega el gobierno directo a los trabajadores"
+      ], correctIndex: 1 },
+      { unit: 7, author: "González", text: "¿Qué significa la imagen de la señal revolucionaria en el recorrido de González?", options: [
+        "Que la revolución debe comenzar siempre en el país más industrializado", "Que cada sociedad evoluciona de manera aislada", "Que una contradicción surgida en el centro o la periferia puede activar procesos conectados dentro de un capitalismo mundial desigual", "Que los acontecimientos históricos obedecen a un calendario fijo"
+      ], correctIndex: 2 }
+    ];
+
+    // El nivel 7 conserva cuatro preguntas de cada una de las seis unidades previas.
+    const reviewQuestionsLevel7 = [
+      ...reviewQuestionsLevel6,
+      ...unit6Questions.slice(0, 4)
+    ];
+
+    const unit8Questions = [
+  {
+    "unit": 8,
+    "author": "Oszlak",
+    "text": "¿Por qué la ruptura del vínculo colonial en 1810 no produjo automáticamente un Estado nacional?",
+    "options": [
+      "Porque las provincias ya tenían un gobierno central consolidado",
+      "Porque faltaban una dirigencia capaz de reemplazar a la Corona, un centro de poder y condiciones materiales e institucionales de unidad",
+      "Porque el territorio carecía de población",
+      "Porque España mantuvo intacta toda su administración"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 8,
+    "author": "Oszlak",
+    "text": "¿Qué relación establece Oszlak entre la internacionalización de la economía y la organización nacional?",
+    "options": [
+      "La apertura externa volvió innecesario el mercado nacional",
+      "La inserción internacional generó intereses y necesidades que impulsaron la articulación de un mercado y un poder nacionales",
+      "El comercio exterior eliminó las diferencias regionales de inmediato",
+      "La economía mundial impidió la formación de alianzas políticas"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 8,
+    "author": "Oszlak",
+    "text": "¿Qué lugar ocupa el orden en el proyecto de organización nacional?",
+    "options": [
+      "Es una restauración exacta del orden colonial",
+      "Es una condición para el progreso y supone imponer un nuevo marco de relaciones sociales y productivas",
+      "Es un problema exclusivamente militar",
+      "Es un resultado espontáneo del crecimiento económico"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 8,
+    "author": "Oszlak",
+    "text": "¿Cuáles son atributos centrales de la estatidad mencionados por Oszlak?",
+    "options": [
+      "Soberanía externa, autoridad institucionalizada, aparato diferenciado y capacidad de producir consenso",
+      "Riqueza privada, homogeneidad religiosa y sufragio universal",
+      "Autonomía provincial absoluta y ausencia de burocracia",
+      "Comercio exterior, inmigración y propiedad rural"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "unit": 8,
+    "author": "Oszlak",
+    "text": "¿Por qué resultó decisivo el liderazgo de Buenos Aires en la organización nacional posterior a Pavón?",
+    "options": [
+      "Porque había renunciado al control de la aduana",
+      "Porque sus recursos y poder permitían estructurar el mercado nacional y hacer viable un Estado, aunque imponiendo la solución porteña",
+      "Porque la Confederación había consolidado una alternativa más poderosa",
+      "Porque desaparecieron todos los conflictos entre sus facciones"
+    ],
+    "correctIndex": 1
+  }
+];
+
+    const unit9Questions = [
+  {
+    "unit": 9,
+    "author": "Antón",
+    "text": "¿Qué elementos comparten las distintas variantes del liberalismo según Antón?",
+    "options": [
+      "Prioridad de la autoridad, gobierno ilimitado y privilegios estamentales",
+      "Prioridad de la libertad, secularización política, derechos individuales y límites jurídicos al gobierno",
+      "Supresión de la propiedad y planificación estatal",
+      "Identidad entre esfera pública y privada"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 9,
+    "author": "Antón",
+    "text": "¿Qué significa la libertad negativa en la tradición liberal?",
+    "options": [
+      "Participar obligatoriamente en todas las decisiones colectivas",
+      "Ausencia de interferencias sobre una esfera de acción individual autónoma",
+      "Obedecer una autoridad religiosa",
+      "Recibir del Estado idénticos resultados materiales"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 9,
+    "author": "Antón",
+    "text": "¿Qué función asigna el liberalismo económico clásico al mercado?",
+    "options": [
+      "Coordinar intereses mediante mecanismos como la competencia, la oferta y la demanda",
+      "Sustituir todos los contratos privados por órdenes estatales",
+      "Eliminar la división del trabajo",
+      "Garantizar por sí mismo la igualdad económica efectiva"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "unit": 9,
+    "author": "Pettit",
+    "text": "¿Cómo define Pettit la libertad republicana?",
+    "options": [
+      "Como ausencia de toda ley",
+      "Como ausencia de dominación o de sujeción a un poder arbitrario",
+      "Como capacidad ilimitada de acumular propiedad",
+      "Como obediencia voluntaria a cualquier gobierno electo"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 9,
+    "author": "Pettit",
+    "text": "¿Qué instituciones ayudan a impedir la dominación política en el diseño republicano?",
+    "options": [
+      "El poder personal y las decisiones secretas",
+      "El imperio de la ley, la dispersión del poder y mecanismos democráticos de control y contestación",
+      "La concentración de funciones en una sola autoridad",
+      "La eliminación de los controles judiciales"
+    ],
+    "correctIndex": 1
+  }
+];
+
+    const unit10Questions = [
+  {
+    "unit": 10,
+    "author": "Respuela",
+    "text": "¿Qué dos preguntas encierra la definición etimológica de democracia como gobierno del pueblo?",
+    "options": [
+      "Quién integra el pueblo y qué significa que gobierne",
+      "Quién posee la riqueza y quién controla el ejército",
+      "Quién redacta la Constitución y quién juzga",
+      "Quién administra y quién recauda impuestos"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "unit": 10,
+    "author": "Respuela",
+    "text": "¿Qué significaban isonomía e isegoría en la democracia ateniense?",
+    "options": [
+      "Propiedad común y trabajo colectivo",
+      "Igualdad ante la ley y derecho de participar y expresarse en la asamblea",
+      "Elección de representantes y separación de poderes",
+      "Libertad económica y libertad religiosa"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 10,
+    "author": "Respuela",
+    "text": "¿Cómo concibe Schumpeter la democracia en el debate contemporáneo?",
+    "options": [
+      "Como identidad permanente entre gobernantes y gobernados",
+      "Como método competitivo para seleccionar dirigentes mediante elecciones",
+      "Como gobierno directo sin representantes",
+      "Como realización automática del bien común"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 10,
+    "author": "Bobbio",
+    "text": "¿Qué diferencia histórica se consolidó entre socialismo reformista y socialismo revolucionario?",
+    "options": [
+      "El reformista buscó transformaciones graduales por la vía democrática; el revolucionario mantuvo la perspectiva de ruptura con el capitalismo",
+      "El reformista rechazó toda participación sindical y el revolucionario defendió el mercado",
+      "Ambos negaron la organización de la clase trabajadora",
+      "El revolucionario abandonó la idea de conquistar el poder político"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "unit": 10,
+    "author": "Bobbio",
+    "text": "¿Qué transformaciones promovieron las socialdemocracias occidentales después de la Segunda Guerra Mundial?",
+    "options": [
+      "La abolición inmediata de toda propiedad privada",
+      "Economías mixtas, redistribución del ingreso y sistemas de bienestar social",
+      "La supresión de los parlamentos",
+      "El partido único y la militarización de la economía"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 10,
+    "author": "Bobbio",
+    "text": "¿Cuál es el dilema entre socialismo y democracia señalado por Bobbio?",
+    "options": [
+      "La democracia elimina siempre la desigualdad económica",
+      "La vía democrática puede bloquear la transformación socialista, pero el socialismo impuesto sin democracia dificulta luego democratizar el poder concentrado",
+      "El socialismo sólo puede existir en economías agrarias",
+      "La democracia y el socialismo son conceptos idénticos"
+    ],
+    "correctIndex": 1
+  }
+];
+
+    const unit11Questions = [
+  {
+    "unit": 11,
+    "author": "D’Auria",
+    "text": "¿Cuáles son los dos principios con los que D’Auria sintetiza el núcleo del anarquismo?",
+    "options": [
+      "Nacionalismo y autoridad",
+      "Socialismo antiautoritario y coherencia entre fines y medios",
+      "Propiedad privada y gobierno mínimo",
+      "Centralización y disciplina partidaria"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 11,
+    "author": "D’Auria",
+    "text": "¿Por qué el anarquismo considera insuficiente explicar el Estado como mero reflejo de la economía?",
+    "options": [
+      "Porque entiende que el Estado posee una lógica e intereses de dominación propios, aunque se vincule con la explotación económica",
+      "Porque niega toda relación entre política y economía",
+      "Porque atribuye al Estado una función siempre neutral",
+      "Porque acepta el monopolio estatal de la producción"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "unit": 11,
+    "author": "D’Auria",
+    "text": "¿Qué expresa la coherencia anarquista entre fines y medios?",
+    "options": [
+      "Que una sociedad libre puede construirse mediante cualquier dictadura transitoria",
+      "Que la libertad y la igualdad futuras deben practicarse desde ahora mediante acción directa, autogestión y asociación libre",
+      "Que los fines políticos carecen de importancia",
+      "Que primero debe conquistarse el Estado y luego fortalecerse"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 11,
+    "author": "D’Auria",
+    "text": "¿Qué sostiene la teoría proudhoniana de la fuerza colectiva?",
+    "options": [
+      "Que el trabajo asociado produce solamente la suma de esfuerzos individuales",
+      "Que la asociación potencia el trabajo y genera un valor adicional apropiado por quien controla los medios de producción",
+      "Que toda producción es exclusivamente individual",
+      "Que el conocimiento no es un producto social"
+    ],
+    "correctIndex": 1
+  }
+];
+
+    const unit12Questions = [
+  {
+    "unit": 12,
+    "author": "Torres Quiroga / Pateman",
+    "text": "¿Qué aspecto oculto del contrato social revela la noción de contrato sexual?",
+    "options": [
+      "Que el individuo universal del contractualismo fue construido como varón y que la libertad civil descansó en un pacto patriarcal",
+      "Que el contrato social eliminó la división entre lo público y lo privado",
+      "Que las mujeres controlaron históricamente la ciudadanía",
+      "Que el matrimonio fue siempre un acuerdo entre partes materialmente iguales"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "unit": 12,
+    "author": "Torres Quiroga / Pateman",
+    "text": "¿En qué ámbitos se manifiesta el contrato sexual según el texto?",
+    "options": [
+      "Sólo en el derecho electoral",
+      "En el matrimonio, el trabajo remunerado y doméstico, la prostitución y la maternidad subrogada",
+      "Únicamente en la educación religiosa",
+      "Sólo en las relaciones comerciales entre empresas"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 12,
+    "author": "Torres Quiroga / Pateman",
+    "text": "¿Por qué la igualdad formal de derechos puede ser insuficiente para emancipar a las mujeres?",
+    "options": [
+      "Porque los derechos carecen siempre de valor",
+      "Porque puede ignorar desigualdades estructurales, experiencias diferentes y relaciones patriarcales que condicionan el consentimiento",
+      "Porque exige eliminar toda regulación jurídica",
+      "Porque supone que las mujeres no deben participar en la esfera pública"
+    ],
+    "correctIndex": 1
+  }
+];
+
+    const unit13Questions = [
+  {
+    "unit": 13,
+    "author": "Casali de Babot",
+    "text": "¿Cómo caracteriza Juan Linz a los regímenes autoritarios?",
+    "options": [
+      "Pluralismo ilimitado, ideología movilizadora y participación intensa",
+      "Pluralismo limitado, mentalidades antes que una ideología elaborada, baja movilización y poder de un jefe o grupo con límites previsibles",
+      "Ausencia completa de autoridad y coerción",
+      "Competencia electoral plena y alternancia asegurada"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 13,
+    "author": "Casali de Babot",
+    "text": "¿Qué diferencia central separa al autoritarismo del totalitarismo?",
+    "options": [
+      "El autoritarismo busca una movilización y penetración social menos intensas, mientras el totalitarismo pretende abarcar y movilizar toda la sociedad",
+      "El totalitarismo admite mayor pluralismo",
+      "El autoritarismo carece de límites fácticos y el totalitarismo siempre los posee",
+      "No existe ninguna diferencia analítica"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "unit": 13,
+    "author": "Casali de Babot",
+    "text": "¿Por qué Rouquié recomienda usar con prudencia el concepto de autoritarismo?",
+    "options": [
+      "Porque sólo se aplica a la Antigüedad",
+      "Porque su carga descalificadora puede hacer que se llame autoritario a todo régimen desaprobado y se pierda precisión analítica",
+      "Porque designa únicamente sistemas democráticos",
+      "Porque carece de toda dimensión histórica"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 13,
+    "author": "Casali de Babot",
+    "text": "¿Qué puede proteger a una democracia frente a la tentación autoritaria según la conclusión del texto?",
+    "options": [
+      "El desarrollo económico por sí solo",
+      "La existencia formal de una Constitución sin prácticas democráticas",
+      "Una cultura política democrática que sostenga efectivamente sus instituciones y valores",
+      "La concentración preventiva del poder"
+    ],
+    "correctIndex": 2
+  }
+];
+
+    const unit14Questions = [
+  {
+    "unit": 14,
+    "author": "Hinojosa Martínez",
+    "text": "¿Por qué la globalización no equivale simplemente a un aumento de intercambios internacionales?",
+    "options": [
+      "Porque supone interpenetración de mercados y procesos económicos, políticos, sociales y culturales que desbordan la regulación estatal",
+      "Porque elimina todo vínculo entre países",
+      "Porque sólo afecta a la geografía",
+      "Porque refuerza automáticamente todas las capacidades nacionales"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "unit": 14,
+    "author": "Hinojosa Martínez",
+    "text": "¿Cómo debe entenderse actualmente la soberanía estatal?",
+    "options": [
+      "Como poder absoluto e ilimitado",
+      "Como titularidad y ejercicio de competencias compatibles con la igualdad e independencia de los demás Estados",
+      "Como aislamiento frente al derecho internacional",
+      "Como inexistencia de obligaciones internacionales"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "unit": 14,
+    "author": "Hinojosa Martínez",
+    "text": "¿Por qué el autor sostiene que el Estado soberano continúa siendo central?",
+    "options": [
+      "Porque la globalización no produjo ningún cambio",
+      "Porque sigue garantizando seguridad, solidaridad y servicios, y no existe una estructura supranacional capaz de sustituirlo plenamente",
+      "Porque las organizaciones internacionales desaparecieron",
+      "Porque todos los Estados poseen el mismo poder material"
+    ],
+    "correctIndex": 1
+  }
+];
+
+    const reviewQuestionsLevel8 = [
+      ...reviewQuestionsLevel7,
+      ...unit7Questions.slice(0, 4)
+    ];
+
+    const questionsPool = [
+      ...unit14Questions,
+      ...reviewQuestionsLevel8,
+      ...unit8Questions,
+      ...unit9Questions,
+      ...unit10Questions,
+      ...unit11Questions,
+      ...unit12Questions,
+      ...unit13Questions,
+    ];
+
+    /*****************************************************
+     * 2) AUDIO - MÚSICA SOLO EN MENÚ
+     *****************************************************/
+    let audioContext = null;
+    let musicBus = null;
+    let effectsBus = null;
+    let feedbackBus = null;
+    let musicTimer = null;
+    let flightMusicTimer = null;
+    let feedbackTimer = null;
+    let musicStarted = false;
+    let flightMusicStarted = false;
+    let musicEnabled = true;
+    const menuNodes = [];
+    const flightNodes = [];
+    const feedbackNodes = [];
+    const ouchAudio = new Audio("data:audio/ogg;base64,T2dnUwACAAAAAAAAAACxbKE4AAAAAMWut30BE09wdXNIZWFkAQEAD4C7AAAAAABPZ2dTAAAAAAAAAAAAALFsoTgBAAAAzUce6wEYT3B1c1RhZ3MIAAAAUmVjb3JkZXIAAAAAT2dnUwAEgH4BAAAAAACxbKE4AgAAAI2MnllmCyEhJCEiIB4cHR0ZHyAdHR0bGhwYHhsXFh4dFxwrLScqJiInGCkhJSEfICowJSgvKS8tNC8wLTI1LysnKicgIycwJisqJy0oKigkKCMgIhwdGxgZHRkUGBUZGi4pJCMgHBwZFRYYSAvkVcZ02g/tBUJIhhsbH52P19/rWQp1R3hwZm3/dcXlb+vjraI89179VNhIhrh/o1HDJbxiSsXGQYXzhthx8qxJBXz/q03Ku3DGtNBIhtIvKD2yIMfytexnMDRaR2qGgId4a2nRwOaEAT4cQOpl+zhIhtHsXNCUO0WB0qHST0VKkLuItVtB0fehsOxJxl8/8ohIht/SGdsQkYOZ0O+zeqHjmGIqDQ4WvuqOXRmtHqbZAthUSB6j0OZEBbkpcBKbfIG/2MZSCshgl+gm6oBDE6ftwYBIhtGzTvYfMAjmkGHumSgWizUec5UZ+wW2mlrxjTNIG4st22x4FKmtma9F6P0ouaWFavukPCtAJGnESBqu4RFaPFUCIncbiyaCFtr1EvmbZ5FN7g1eAKBIGFpn/oH4wnrEBsPcqQ/BcPIzDSMI4K9OqAGgwEgYZh5kr0ocVJgHRKihBjuEqQkXuH87n4BIGGRCr8pd757blOSi7hwOg80sEHL89bQnrGk1XxVASBhjWI0/FpHq5Hk30aTTVe5ZNO08Pvk4zAUIWVILAiBIF/fy+rEfZymArWETiE1SBt6EBFqA+fefuE4zgEgVNHak8oRhr/GnSbCrfwgTtBKtnZt8pMAqZjRySBVSYtLhOFPvMUdFFUsfJVKGH/qBWMpCl4qQZ2BIFRQfn7zQ/ZcyCn0RNeGB68L5eUxxBulQ15pIEi1XhJj3UBBc0jFTCNtO2fdx35rHcxUGgEgSLYN/dOml1O/l7wKJNAXfMTp62SWh6Vy5BvhIEi1gWAM5OWEhNNDnW1vvpU4fT5VtzkBIEi1TVFreb2JGSoYI7t+F7GEp72MI3AI1fOe6OkBIEi1i4Zo2FXRXn2KSY6Sb15lYLWlw2BYIzwhIEgUbIjz6uYjwPZC+NH1UI9dLK1CBmEgRrAmEepF67+qp5YusYukiN2YsurRIDwkomU5t1sr9tQi2kgCrawC/9+r6kWG6tMozreBIDwhnZgHQpopRJs/pphOcnxH6PCmd7QhjhxOXEEgO492wkzVcv9zFhoExIP3ROiDo/LcgSA8IV31chNgTsdDOMyJRRznSY/OW3vFct84LgEiAFzDndAin4BzFtjmhWDy9+O2J11+AL+2exAL5iHU2N2Mvwz2NayVrFuBIio1XpSSMFXpcoZOLY0Kk85+MVvkO4/ifoF6IWfj4hQN6639Y6Xv8zbnYk4BIi08nKki/XXQ1o3/ANlWVbh7mEJ3I+CmK3aicO0loE8VTE/4q38BIil15LnPaNA2Jyf4ECu3QFL/TBX3pYu6n6kc//bcA9wfXcKfZXk7zuyJIiQyd6CmTGSX8A9dLzIbiwxvDAHoqOCH2OBLupS7p31R4fdUMEUiITZbiYZ74YI+LdbFZbRWUyJTio4zh5BEZ64vxSzLP9RtIgHDNGHHKxIvFvZzt95klsslWAFASTF8yYy6yBdEM9hqNMnkNc4BIlSPASWZSJ6WsW1IV1DNtEFM2SrUd5GBIjM5jJ8behRhjd2cAvft4PD7VgU91pxVw5c3uIIlDuBtsgXGb2SwhcEiJChKCqC+qoRfyiq3Z7vE2dr70oBovqOJWzb+Yrq/FwEiH4whsKUhl1pibrhwSP7MyCTVXdyWALvg1/FxO9CIKwo3LVNxIhz3cBMRyVnHyzPaJFDGvTJMfjNimyBFF/neYKnnL6WlIHoh2oBtaNiHP3sfKYvJG603PdWTWHLX8RpXjZsNASBtjdqAbV2KTMjlyOxL0UGR5RSh7GnbQIRm5JccsuzhIgEqNPxiNqQFRlOEFlPSI6jE1qSnrE5v1hEjosRi1me/XmYT3c7Wzo0BIhXat6GIcBE7z/Bqv1uVpTSPGDnmyHXT12xUjDkcsJZKDWQuSkp/MxzbE81+NJflIhIE63MdwEDxSWCTNQ0h9uzOhPdCpuumfpt0NQYvtvG1z6SpgSJAVSkT8iUGKBAvPuynPbnjRqwccNY3zh2VOFGLcZUJYxgsrHpV0YEiNffnXGGkWKl9sbowpTuh8BdO9/GV1wzwuY5HP3tWfw4BtPbWhVXJvg8ZG2YBASIOwI+98io30qrIA3dOPVjw3vzjLEroRxeBbceOf5GhRwN+VdsX2dR9Ik5u32qiJOrEDfuQUM9ZYuiRstxyRXZtUj04+7oIu3UaLJiCFjjzGQE0/5etREEiTI1tn0WwrY9xhiniCmuP1zQpQZfgbfWq+261Q7ijvKQzfkk8hqw5j9hya0Ei5FKCJj7vQB6/GSDRmIeXkzfqpfNy/eyIGRYmIx9IlUIS083NOFwr2/MZZuAsecvDa0IBIu+0d3DoGRgMELQ33ZU7gb9JRNWb37oyoH4TNfqIS+jogRrsI20PlK1fYhRLmoEi5PsrCI6/AgS/KdPtOVCiu+dMv180TkJqyyzGe1mpgK97eVs4QShjNXUcSZb6LCEi22YWCz6Uqi6A4hu9mV/yhDuL5Nov1sn5aNIIuTgeApHIy7aO1eae89WIiwEi28pBXWRy3eneD+0sjfCtZOK/RaWoDkGeFPqMgkLSyMLZVBo3RPOlk09IJ56aLV8iASLfgIcNzUuIuiWMtHb7GZMtRFL+8XOX9vx/5PVV98PPAcWHCU6Bh01/R5J3lwHtgNd61UiRIhTdJXWy1ggJnIU23qshvzhqTeXotwDmZ654QSix7m5bNf1s/ijr1qkaUcSVGYEiTcRDR3ds1dBSJqSbkxnQujWnoqZWPQUVvVdRgE1jYvZJTQRIdDGPjaohIje4TR0tP2rU8sz4lMQktcD1QSYD6GtBoycLO8OUyyJald7PdKgxIi9ojROV6TdnuGRkgB9oqqDEN8eHDcP6QKi38OrA24nAWjv0nai45qnBINmin0CRwOGqNuKSh5nX3ELkQpGZ66hhSuuzkOCu29ugs1HIb3FlIMsxgndRTCMtkcwHfkDXZuwXOhCleEAkMOoVRvfr/YEgstQDkK0ssNT5sUSRqBZtOLQe6j0glFMLDuUCBvvKQjCcWSINBKVyAX/reyfOGurO3TCibIZ/D3/zrztYCbJ/Xgj7IW9Zb2ESASJgAsFEXx1xve3at4ZA1SK+R2ZKEUCIZSkpwdnOpnm7fc5ct/pBcB0urhh7dQh8wSJfizsCUBSzSgoI1E/VPMf2yDEzQ6LDXUuyc4YupXc5RuWz07N9Il5sE5vFoZPIGZTYQ4QPvgts05YxSrgpgB10Yb94FcMUo5PK2o2usuj6/SJeK1iP7whQm2PtmxoFZtN3DMiy6XcQ89FlBsvRMwnyb/itnw3rYKkWoSJcyvThbbS80EKB6dPG6eeuXlqlBL0dw+GQOUwRjv+3DVmmaLz56SJYH67FM0sAIqs7tjHMUHAajTVuVH3NqhyfDzs5ExQnk9LdKrT4ljI9A94xASJRPyH1aw01H5kkRceF79ZwUlJI25YYuPQa6/2gJ/RSXaA18H5WE0EiS5S1jqPb2dr/VXMtaYvSKjXJg4tGrNrw4sUJ6Nr3vzRxleexwGDuW2EiPk5s1O2cLFUm1krFQP/8tiEISNZX1i0zjiDHLotMWy3R20e8Co3BIjWOFkKd0tWqWah0W3YAnNk2sjO2tf35WTXvrw1utLEyBi0BIi09YDC3w2yZiTechSvzYD1lBtDC70SF7jcd9ITih6p6elwWYLY1gSDRpYEuA8mjIaPWXw0iIncidOlskiHH62bRKhcyTkVkL2cBILwYShZeXMDxfSDN1YdDoHtn5pc4cdb7Msag6WPoC4Egq3ILmEJzyzr7z+SJubTStkx+PGcrVW6/ajaYneqJBhEFIJIWEwcWAOMim04O85Hey1Yp8z6W0TpWa3z74SB5U8XooviC2DRmS+JVVWE3dmLbFuh6yuPD4bhdIGDltUHUo8ISKkE+VYdlGFLsahZeWpco4mXhIEe9G9eaupzmQMAh5fwz2KI5Fs1pFGPRIDspQmP2F//8jN5jeDWqkEx9H33DMgiiUSA0sc8B5ONOUevL5Iiri+G7Jf9smv5VND8Ic/+BIDVGuZSebkCEITuuaw3El+y3PxRIgQg7RSA0sBazvbEX9o6bzDtqgevyZxSNIDSHaZ9crWtkc2sQnQJ17+B04Id4wS4BIDSxmKfquLRivlLgYAd/P8fQbpuBIDSHANEM9FNA0t8rU+DAmiEE8wzHOSPUCSA0hwDPhQerQRtQ0FGL020V/jO0Vszhp/sBIgD3EcgSWwXWbySzmdmRqWgMAlIqp+uLTtp8gqaNy6NtsI+kGL/Ft+VVmGLMdSIkee4/9npeiiEpgMDwqhjdHvwIM6LAK1SMkWUphBQNQE2yBXxz9t3hIiKH3aPN7m/05oiqmHnZ0cZ7iN5rrUQ5Q5nUXkLzThsMp3UdIh3q7bx6FR2DAqO0M+X8Jeq+hAMgi5ikxHoYkh6sZN4nMBUgeTsXu7huzJza28sh+WCA7EI2NGeO3Rq6wz+X2ISMoSBqX+D6xAppXbh0HM5cQCuwEPzcSlQlhNJ6GQEgU2iR8mtDZHvU2lBKnum+97t3cOrbDLhf6/C9IEe8zwzCO9I+OEBeaGR30+Uc2y8gvsibVSA7KPYwsWFEtyAWUN3fSJbQET6DsSA0spjzvh4umINLAJ1BiIcVvoLizdEgNIpQVMiIzz6AmFSSjLdnuxCC0UD1S8A==");
+    ouchAudio.preload = "auto";
+    ouchAudio.volume = 1;
+
+    function getAudioContext() {
+      if (!audioContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+        audioContext = new AudioContextClass();
+        musicBus = audioContext.createGain();
+        effectsBus = audioContext.createGain();
+        feedbackBus = audioContext.createGain();
+        musicBus.gain.value = 1;
+        effectsBus.gain.value = 1;
+        feedbackBus.gain.value = 1;
+        musicBus.connect(audioContext.destination);
+        effectsBus.connect(audioContext.destination);
+        feedbackBus.connect(audioContext.destination);
+      }
+      if (audioContext.state === "suspended") audioContext.resume();
+      return audioContext;
+    }
+
+    function playTone(frequency, duration, type = "sine", volume = 0.18, delay = 0, group = null) {
+      const context = getAudioContext();
+      if (!context) return;
+
+      const start = context.currentTime + delay;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(volume, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      oscillator.connect(gain);
+      const destination = group === menuNodes || group === flightNodes
+        ? musicBus
+        : group === feedbackNodes
+          ? feedbackBus
+          : effectsBus;
+      gain.connect(destination || context.destination);
+      if (group) {
+        group.push(oscillator);
+        oscillator.addEventListener("ended", () => {
+          const index = group.indexOf(oscillator);
+          if (index >= 0) group.splice(index, 1);
+        });
+      }
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.02);
+    }
+
+    function stopNodes(group) {
+      group.splice(0).forEach(node => {
+        try { node.stop(); } catch (_) {}
+      });
+    }
+
+    function setBusLevel(bus, level) {
+      const context = getAudioContext();
+      if (!context || !bus) return;
+      bus.gain.cancelScheduledValues(context.currentTime);
+      bus.gain.setValueAtTime(level, context.currentTime);
+    }
+
+    function playEffect(name) {
+      if (name === "flap") {
+        playTone(560, 0.07, "sine", 0.22);
+        playTone(820, 0.08, "sine", 0.18, 0.045);
+      } else if (name === "score") {
+        playTone(523.25, 0.11, "triangle", 0.22);
+        playTone(659.25, 0.11, "triangle", 0.22, 0.10);
+        playTone(783.99, 0.15, "triangle", 0.24, 0.20);
+      } else if (name === "hit") {
+        playTone(190, 0.18, "sawtooth", 0.25);
+        playTone(115, 0.25, "square", 0.17, 0.10);
+      } else if (name === "fire") {
+        playTone(105, 0.22, "sawtooth", 0.12);
+        playTone(78, 0.30, "triangle", 0.10, 0.08);
+      } else if (name === "rival") {
+        playTone(980, 0.08, "sine", 0.16);
+        playTone(740, 0.10, "triangle", 0.15, 0.08);
+      }
+    }
+
+    const menuMelody = [261.63, 329.63, 392, 523.25, 440, 392, 329.63, 293.66];
+    function playMenuMelody() {
+      if (!musicEnabled || !musicStarted || gameState !== "menu") return;
+      menuMelody.forEach((note, index) => {
+        playTone(note, 0.28, "triangle", 0.075, index * 0.30, menuNodes);
+      });
+    }
+
+    function stopMenuMusic() {
+      musicStarted = false;
+      if (musicTimer) clearInterval(musicTimer);
+      musicTimer = null;
+      stopNodes(menuNodes);
+    }
+
+    function ensureMenuMusic() {
+      if (!musicEnabled || gameState !== "menu") return;
+      getAudioContext();
+      setBusLevel(musicBus, 1);
+      if (musicStarted) return;
+      musicStarted = true;
+      playMenuMelody();
+      musicTimer = setInterval(playMenuMelody, 2500);
+    }
+
+    const flightMelody = [392, 440, 493.88, 523.25, 493.88, 440, 392, 329.63];
+    function playFlightMelody() {
+      if (!musicEnabled || !flightMusicStarted || gameState !== "playing") return;
+      flightMelody.forEach((note, index) => {
+        playTone(note, 0.20, "sine", 0.055, index * 0.22, flightNodes);
+      });
+    }
+
+    function startFlightMusic() {
+      if (!musicEnabled || gameState !== "playing" || flightMusicStarted) return;
+      stopMenuMusic();
+      setBusLevel(musicBus, 1);
+      flightMusicStarted = true;
+      playFlightMelody();
+      flightMusicTimer = setInterval(playFlightMelody, 1900);
+    }
+
+    function stopFlightMusic() {
+      setBusLevel(musicBus, 0);
+      flightMusicStarted = false;
+      if (flightMusicTimer) clearInterval(flightMusicTimer);
+      flightMusicTimer = null;
+      stopNodes(flightNodes);
+    }
+
+    function hardStopFlightAudio() {
+      stopMenuMusic();
+      stopFlightMusic();
+
+      // Desconecta el canal completo: ninguna nota ya programada puede seguir sonando.
+      if (audioContext && musicBus) {
+        try { musicBus.disconnect(); } catch (_) {}
+        musicBus = audioContext.createGain();
+        musicBus.gain.value = 0;
+        musicBus.connect(audioContext.destination);
+      }
+    }
+
+    function stopFeedbackSound() {
+      if (feedbackTimer) clearInterval(feedbackTimer);
+      feedbackTimer = null;
+      stopNodes(feedbackNodes);
+      setBusLevel(feedbackBus, 0);
+    }
+
+    function playFeedbackSound(kind) {
+      stopFeedbackSound();
+      setBusLevel(feedbackBus, 1);
+
+      function playPattern() {
+        if (kind === "celebration") {
+          [523.25, 659.25, 783.99, 1046.5].forEach((note, index) => {
+            playTone(note, 0.18, "triangle", 0.24, index * 0.13, feedbackNodes);
+          });
+        } else {
+          [349.23, 293.66, 220, 164.81].forEach((note, index) => {
+            playTone(note, 0.25, "sawtooth", 0.13, index * 0.18, feedbackNodes);
+          });
+        }
+      }
+
+      playPattern();
+      feedbackTimer = setInterval(playPattern, kind === "celebration" ? 1050 : 1250);
+    }
+
+    function stopOuch() {
+      ouchAudio.pause();
+      ouchAudio.currentTime = 0;
+    }
+
+    function playOuch() {
+      setBusLevel(musicBus, 0);
+      stopOuch();
+      ouchAudio.play().catch(() => {
+        // Respaldo breve si el navegador bloquea el archivo de audio.
+        playEffect("hit");
+      });
+    }
+
+    function fadeMusicTo(targetVolume, durationMs = 600, pauseAtEnd = false) {
+      if (targetVolume === 0 || pauseAtEnd) stopMenuMusic();
+      else ensureMenuMusic();
+    }
+
+    // Los navegadores bloquean el audio automático. El primer clic o tecla
+    // habilita el sonido de forma compatible sin pedir permisos adicionales.
+    function unlockAudio() {
+      getAudioContext();
+    }
+
+    window.addEventListener("pointerdown", unlockAudio, { once: true, capture: true });
+    window.addEventListener("keydown", unlockAudio, { once: true, capture: true });
+
+    /*****************************************************
+     * 3) VARIABLES PRINCIPALES
+     *****************************************************/
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const hud = document.getElementById("hud");
+    const levelLabel = document.getElementById("levelLabel");
+    const scoreLabel = document.getElementById("scoreLabel");
+    const difficultyLabel = document.getElementById("difficultyLabel");
+
+    const difficultyButtons = document.querySelectorAll("button[data-diff]");
+    const levelIntroBox = document.getElementById("levelIntroBox");
+    const levelStartButton = document.getElementById("levelStartButton");
+    const levelCompleteBox = document.getElementById("levelCompleteBox");
+    const backToLevelsButton = document.getElementById("backToLevelsButton");
+
+    const questionBox = document.getElementById("questionBox");
+    const questionCard = document.getElementById("questionCard");
+    const questionText = document.getElementById("questionText");
+    const answerFeedback = document.getElementById("answerFeedback");
+    const optionButtons = document.querySelectorAll(".optionBtn");
+    const resumeBox = document.getElementById("resumeBox");
+    const resumeButton = document.getElementById("resumeButton");
+
+    const musicToggleBtn = document.getElementById("musicToggleBtn");
+    const testSoundBtn   = document.getElementById("testSoundBtn");
+
+    let gameState = "intro"; // intro | playing | impact | question | ready | finishing | complete
+    let currentDifficultyKey = "medio";
+    let currentDifficulty = null;
+
+    let frameCount = 0;
+    let obstacles = [];
+    let rivalBirds = [];
+    let treeGrowth = 0;
+    let score = 0;
+    let level = 1;
+    let finishAnimationFrame = null;
+    let impactAnimationFrame = null;
+    let impactProgress = 0;
+
+    let usedQuestionIndices = new Set();
+    let currentQuestionIndex = null;
+    let questionCycleIndex = 0;
+
+    const gravity = 0.35;
+    const jumpStrength = -6.8;
+
+    const bird = {
+      x: canvas.width * 0.15,
+      y: canvas.height * 0.5,
+      vy: 0,
+      width: 50,
+      height: 38
+    };
+
+    const difficultyConfig = {
+      facil:  { label:"Fácil",   speed:4.32, gap:112, spawn:104, motion:52, motionSpeed:0.031, fireChance:0.480, rivalSpawn:201, rivalSpeed:5.52 },
+      medio:  { label:"Medio",   speed:5.24, gap:86, spawn:82, motion:68, motionSpeed:0.038, fireChance:0.550, rivalSpawn:146, rivalSpeed:6.69 },
+      dificil:{ label:"Difícil", speed:6.16, gap:78, spawn:76, motion:82, motionSpeed:0.045, fireChance:0.620, rivalSpawn:115, rivalSpeed:7.86 }
+    };
+
+    const levelsConfig = Array.from({ length: 14 }, (_, index) => ({
+      number: index + 1,
+      title: index === 13 ? "GLOBALIZACIÓN, SOBERANÍA Y ESTADO" : "PRÓXIMAMENTE",
+      goal: index === 13 ? 18 : null,
+      unlocked: index === 13
+    }));
+    const currentLevel = levelsConfig[13];
+    currentDifficulty = difficultyConfig[currentDifficultyKey];
+
+    let wingPhase = 0; // para la animación de alas
+    let treePhase = 0; // movimiento de hojas y cartel luminoso
+
+    /*****************************************************
+     * 4) FONDO: SOL + CONSTITUCIÓN
+     *****************************************************/
+    function drawSunWithConstitution() {
+      const cx = canvas.width - 120;
+      const cy = 80;
+      const radius = 50;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      // Rayos
+      ctx.strokeStyle = "#ffd93b";
+      ctx.lineWidth = 4;
+      for (let i = 0; i < 16; i++) {
+        const angle = (Math.PI * 2 * i) / 16;
+        const x1 = Math.cos(angle) * (radius + 6);
+        const y1 = Math.sin(angle) * (radius + 6);
+        const x2 = Math.cos(angle) * (radius + 18);
+        const y2 = Math.sin(angle) * (radius + 18);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+
+      // Sol
+      ctx.fillStyle = "#ffea3d";
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Librito de la Constitución
+      const bookW = 40;
+      const bookH = 32;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#1b1b1b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.rect(-bookW / 2, -bookH / 2, bookW, bookH);
+      ctx.fill();
+      ctx.stroke();
+
+      // Lomo celeste
+      ctx.fillStyle = "#4dabff";
+      ctx.fillRect(-bookW / 2, -bookH / 2, 8, bookH);
+
+      // Líneas tipo páginas
+      ctx.strokeStyle = "#cccccc";
+      ctx.lineWidth = 1;
+      for (let i = -bookH / 2 + 6; i < bookH / 2 - 4; i += 5) {
+        ctx.beginPath();
+        ctx.moveTo(-bookW / 2 + 10, i);
+        ctx.lineTo(bookW / 2 - 4, i);
+        ctx.stroke();
+      }
+
+      // Letras "CN"
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 12px system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("CN", 5, 0);
+
+      ctx.restore();
+    }
+
+    function drawBackground() {
+      ctx.fillStyle = "#7be0ff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      drawSunWithConstitution();
+
+      ctx.fillStyle = "#63c368";
+      ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+    }
+
+    function getNestPosition() {
+      return {
+        x: canvas.width - 252,
+        y: canvas.height - 225
+      };
+    }
+
+    function drawNest(x, y) {
+      ctx.save();
+      ctx.lineCap = "round";
+
+      // Ramita que sostiene el nido.
+      ctx.strokeStyle = "#6f431f";
+      ctx.lineWidth = 10;
+      ctx.beginPath();
+      ctx.moveTo(x - 68, y + 10);
+      ctx.quadraticCurveTo(x - 12, y + 18, x + 66, y + 5);
+      ctx.stroke();
+
+      // Nido tejido.
+      ctx.fillStyle = "#9a622f";
+      ctx.beginPath();
+      ctx.ellipse(x, y, 43, 17, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#c58a45";
+      ctx.beginPath();
+      ctx.ellipse(x, y - 3, 35, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#5f3a1c";
+      ctx.beginPath();
+      ctx.ellipse(x, y - 4, 27, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#d29a56";
+      ctx.lineWidth = 3;
+      for (let offset = -32; offset <= 32; offset += 13) {
+        ctx.beginPath();
+        ctx.moveTo(x + offset - 8, y - 2);
+        ctx.lineTo(x + offset + 9, y + 10);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawStateTree() {
+      const x = canvas.width - 190;
+      const ground = canvas.height - 40;
+
+      ctx.save();
+      const growthScale = 1 + treeGrowth * 0.48;
+      ctx.translate(x, ground);
+      ctx.scale(growthScale, growthScale);
+      ctx.translate(-x, -ground);
+      ctx.fillStyle = "#754c24";
+      ctx.fillRect(x - 24, ground - 190, 48, 190);
+
+      ctx.strokeStyle = "#754c24";
+      ctx.lineWidth = 16;
+      ctx.lineCap = "round";
+      [[-85,-115],[-52,-160],[62,-152],[92,-105]].forEach(([dx,dy]) => {
+        ctx.beginPath();
+        ctx.moveTo(x, ground - 125);
+        ctx.lineTo(x + dx, ground + dy);
+        ctx.stroke();
+      });
+
+      const crowns = [
+        [x, ground-230, 78], [x-72, ground-202, 64], [x+70, ground-202, 66],
+        [x-38, ground-270, 62], [x+42, ground-272, 64]
+      ];
+      crowns.forEach(([cx,cy,r], index) => {
+        const swayX = Math.sin(treePhase * 1.35 + index * 0.9) * (3 + index % 2);
+        const swayY = Math.cos(treePhase * 1.05 + index * 0.7) * 1.8;
+        ctx.fillStyle = index % 2 ? "#2f9e44" : "#37b24d";
+        ctx.beginPath();
+        ctx.arc(cx + swayX, cy + swayY, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hojas visibles que oscilan individualmente con el viento.
+        for (let leaf = 0; leaf < 9; leaf++) {
+          const angle = (Math.PI * 2 * leaf) / 9 + index * 0.42;
+          const distance = r * (0.34 + (leaf % 3) * 0.17);
+          const flutter = Math.sin(treePhase * 3 + leaf + index) * 4;
+          const leafX = cx + swayX + Math.cos(angle) * distance + flutter;
+          const leafY = cy + swayY + Math.sin(angle) * distance;
+          ctx.save();
+          ctx.translate(leafX, leafY);
+          ctx.rotate(angle + Math.sin(treePhase * 2.4 + leaf) * 0.28);
+          ctx.fillStyle = leaf % 2 ? "#74c947" : "#8bd450";
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 9, 4.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      });
+
+      ctx.strokeStyle = "#5f3a1c";
+      ctx.lineWidth = 9;
+      const rootReach = 1 + treeGrowth * 0.75;
+      [-1, -0.55, 0, 0.55, 1].forEach((direction, index) => {
+        ctx.beginPath();
+        ctx.moveTo(x, ground - 4);
+        ctx.quadraticCurveTo(x + 54 * direction * rootReach, ground - 14 + Math.abs(direction) * 5, x + 105 * direction * rootReach, ground - 1 + (index % 2) * 4);
+        ctx.stroke();
+      });
+
+      const signY = ground - 130 + Math.sin(treePhase * 1.7) * 5;
+      const glow = 16 + (Math.sin(treePhase * 3.2) + 1) * 8;
+      ctx.save();
+      ctx.translate(0, Math.sin(treePhase * 1.15) * 2);
+      ctx.fillStyle = "#fff7d6";
+      ctx.strokeStyle = "#ffe066";
+      ctx.shadowColor = "#fff176";
+      ctx.shadowBlur = glow;
+      ctx.lineWidth = 5;
+      ctx.setLineDash([14, 8]);
+      ctx.lineDashOffset = -treePhase * 24;
+      ctx.beginPath();
+      ctx.roundRect(x - 70, signY, 140, 48, 10);
+      ctx.fill();
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.shadowBlur = 8;
+      ctx.strokeStyle = "#5f3a1c";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = "#173b2d";
+      ctx.font = "bold 21px system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("EL ESTADO", x, signY + 24);
+      ctx.restore();
+
+      const nest = getNestPosition();
+      drawNest(nest.x, nest.y);
+      ctx.restore();
+    }
+
+    function beginLevelComplete() {
+      if (gameState !== "playing") return;
+      hardStopFlightAudio();
+      gameState = "finishing";
+      obstacles = [];
+      rivalBirds = [];
+
+      const nest = getNestPosition();
+      const targetX = nest.x - bird.width / 2;
+      const targetY = nest.y - bird.height + 5;
+
+      function animateArrival() {
+        if (gameState !== "finishing") return;
+        wingPhase += 0.18;
+        treePhase += 0.035;
+        bird.x += Math.min(5, Math.max(1, (targetX - bird.x) * 0.045));
+        bird.y += (targetY - bird.y) * 0.055;
+        bird.vy = 0;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        drawStateTree();
+        drawBird();
+
+        if (Math.abs(targetX - bird.x) > 4 || Math.abs(targetY - bird.y) > 4) {
+          finishAnimationFrame = requestAnimationFrame(animateArrival);
+          return;
+        }
+
+        bird.x = targetX;
+        bird.y = targetY;
+        bird.vy = 0;
+        const growthStart = performance.now();
+        const growthDuration = 1650;
+
+        function animateStrongTree(now) {
+          const progress = Math.min(1, (now - growthStart) / growthDuration);
+          treeGrowth = 1 - Math.pow(1 - progress, 3);
+          const scale = 1 + treeGrowth * 0.48;
+          const anchorX = canvas.width - 190;
+          const anchorY = canvas.height - 40;
+          const baseNest = getNestPosition();
+          const scaledNestX = anchorX + (baseNest.x - anchorX) * scale;
+          const scaledNestY = anchorY + (baseNest.y - anchorY) * scale;
+          bird.x = scaledNestX - bird.width / 2;
+          bird.y = scaledNestY - bird.height + 5;
+
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          drawBackground();
+          drawStateTree();
+          drawBird(true);
+          ctx.save();
+          ctx.textAlign = "center";
+          ctx.font = "bold 30px system-ui";
+          ctx.fillStyle = "#fff7d6";
+          ctx.strokeStyle = "#173b2d";
+          ctx.lineWidth = 6;
+          ctx.strokeText("¡Felicidades! ¡Llegaste a la meta!", canvas.width / 2, 78);
+          ctx.fillText("¡Felicidades! ¡Llegaste a la meta!", canvas.width / 2, 78);
+          ctx.restore();
+
+          if (progress < 1) {
+            finishAnimationFrame = requestAnimationFrame(animateStrongTree);
+          } else {
+            gameState = "complete";
+            playFeedbackSound("celebration");
+            setTimeout(() => {
+              if (gameState === "complete") levelCompleteBox.style.display = "flex";
+            }, 650);
+          }
+        }
+        finishAnimationFrame = requestAnimationFrame(animateStrongTree);
+      }
+
+      finishAnimationFrame = requestAnimationFrame(animateArrival);
+    }
+
+    /*****************************************************
+     * 5) RESET & MENÚ
+     *****************************************************/
+    function fullReset() {
+      if (impactAnimationFrame) cancelAnimationFrame(impactAnimationFrame);
+      impactAnimationFrame = null;
+      impactProgress = 0;
+      treeGrowth = 0;
+      score = 0;
+      frameCount = 0;
+      obstacles = [];
+      rivalBirds = [];
+      usedQuestionIndices.clear();
+      questionCycleIndex = 0;
+      level = 1;
+
+      bird.x = canvas.width * 0.15;
+      bird.y = canvas.height * 0.5;
+      bird.vy = 0;
+
+      scoreLabel.textContent = `Meta: 0/${currentLevel.goal}`;
+      levelLabel.textContent = `Nivel ${currentLevel.number} · ${currentLevel.title}`;
+    }
+
+    function softResetAfterQuestion() {
+      if (impactAnimationFrame) cancelAnimationFrame(impactAnimationFrame);
+      impactAnimationFrame = null;
+      impactProgress = 0;
+      frameCount = 0;
+      obstacles = [];
+      rivalBirds = [];
+      bird.x = canvas.width * 0.15;
+      bird.y = canvas.height * 0.5;
+      bird.vy = 0;
+    }
+
+    function goToMenu() {
+      hardStopFlightAudio();
+      stopFeedbackSound();
+      stopOuch();
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      gameState = "intro";
+      fullReset();
+      hud.style.display = "none";
+      levelIntroBox.style.display = "flex";
+      levelCompleteBox.style.display = "none";
+      questionBox.style.display = "none";
+      resumeBox.style.display = "none";
+      difficultyLabel.textContent = "Dificultad: " + currentDifficulty.label;
+
+      draw();
+    }
+
+    function startGame() {
+      fullReset();
+      hud.style.display = "flex";
+      levelIntroBox.style.display = "none";
+      levelCompleteBox.style.display = "none";
+
+      if (musicStarted) {
+        fadeMusicTo(0, 700, true);
+      }
+
+      difficultyLabel.textContent = "Dificultad: " + currentDifficulty.label;
+      gameState = "playing";
+      startFlightMusic();
+      loop();
+    }
+
+    /*****************************************************
+     * 6) PREGUNTAS
+     *****************************************************/
+    function askQuestion() {
+      const available = [...questionsPool.keys()].filter(
+        i => !usedQuestionIndices.has(i)
+      );
+
+      if (available.length === 0) {
+        alert("¡Respondiste todas las preguntas! 🎉");
+        goToMenu();
+        return;
+      }
+
+      // Secuencia acumulativa: la Unidad 4 conserva el mayor peso y entre
+      // sus preguntas aparecen repasos ordenados de las unidades anteriores.
+      const unitCycle = [14, 1, 14, 2, 14, 3, 14, 4, 14, 5, 14, 6, 14, 7, 14, 8, 14, 9, 14, 10, 14, 11, 14, 12, 14, 13];
+      const desiredUnit = unitCycle[questionCycleIndex % unitCycle.length];
+      questionCycleIndex++;
+      const preferred = available.filter(i => questionsPool[i].unit === desiredUnit);
+      const candidates = preferred.length ? preferred : available;
+      currentQuestionIndex =
+        candidates[Math.floor(Math.random() * candidates.length)];
+      usedQuestionIndices.add(currentQuestionIndex);
+
+      const q = questionsPool[currentQuestionIndex];
+      questionText.textContent = q.text;
+
+      answerFeedback.style.display = "none";
+      answerFeedback.textContent = "";
+
+      optionButtons.forEach((btn, i) => {
+        btn.textContent = q.options[i] ?? "";
+        btn.style.display = q.options[i] ? "block" : "none";
+        btn.disabled = false;
+        btn.classList.remove("correctAnswer", "incorrectAnswer");
+      });
+
+      hardStopFlightAudio();
+
+      questionBox.style.display = "flex";
+      gameState = "question";
+    }
+
+    function handleAnswer(idx) {
+      const q = questionsPool[currentQuestionIndex];
+      if (!q) return;
+
+      // Corte duro de todo audio previo antes de dar la devolución.
+      hardStopFlightAudio();
+      stopFeedbackSound();
+      stopOuch();
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+
+      optionButtons.forEach(btn => btn.disabled = true);
+      answerFeedback.style.display = "block";
+
+      if (idx === q.correctIndex) {
+        optionButtons[idx].classList.add("correctAnswer");
+        answerFeedback.textContent = "¡Respuesta correcta! Volvemos a volar 🐦✨";
+        playFeedbackSound("celebration");
+
+        setTimeout(() => {
+          questionBox.style.display = "none";
+          softResetAfterQuestion();
+          gameState = "ready";
+          resumeBox.style.display = "flex";
+          draw();
+        }, 650);
+      } else {
+        optionButtons[idx].classList.add("incorrectAnswer");
+        answerFeedback.textContent = "¡Revisá el texto y volvé volando a jugar!";
+        playFeedbackSound("down");
+
+        setTimeout(() => {
+          goToMenu();
+        }, 2200);
+      }
+    }
+
+    resumeButton.addEventListener("click", () => {
+      if (gameState !== "ready") return;
+      stopFeedbackSound();
+      resumeBox.style.display = "none";
+      gameState = "playing";
+      startFlightMusic();
+      loop();
+    });
+
+    /*****************************************************
+     * 7) INPUT
+     *****************************************************/
+    function flap() {
+      if (gameState === "playing") {
+        bird.vy = jumpStrength;
+        playEffect("flap");
+      }
+    }
+
+    window.addEventListener("keydown", e => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        flap();
+      }
+    });
+
+    canvas.addEventListener("mousedown", flap);
+    canvas.addEventListener("touchstart", e => {
+      e.preventDefault();
+      flap();
+    }, { passive:false });
+
+    /*****************************************************
+     * 8) OBSTÁCULOS (COMUNISTAS / ANARQUISTAS)
+     *****************************************************/
+    function spawnObstacle() {
+      const gap = currentDifficulty.gap;
+      const margin = 60 + currentDifficulty.motion;
+      const centerY =
+        margin + gap/2 + Math.random() * (canvas.height - 2*margin - gap);
+
+      obstacles.push({
+        x: canvas.width + 40,
+        width: 70,
+        gapY: centerY,
+        baseGapY: centerY,
+        gapHeight: gap,
+        motionAmplitude: currentDifficulty.motion * (0.72 + Math.random() * 0.28),
+        motionSpeed: currentDifficulty.motionSpeed * (0.82 + Math.random() * 0.36),
+        motionPhase: Math.random() * Math.PI * 2,
+        passed: false,
+        fire: Math.random() < currentDifficulty.fireChance,
+        firePhase: Math.random() * 180,
+        fireWarned: false,
+        style: Math.random() < 0.5 ? "comunista" : "anarquista"
+      });
+    }
+
+    function drawCommunistDecor(x, y, w, h) {
+      ctx.save();
+      ctx.translate(x + w/2, y + h/2);
+
+      // hoz
+      ctx.beginPath();
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = "#d62828";
+      ctx.arc(0, 0, 22, Math.PI*0.2, Math.PI*1.3);
+      ctx.stroke();
+
+      // mango
+      ctx.fillStyle = "#8b5a2b";
+      ctx.fillRect(-4, -6, 8, 24);
+
+      // martillo
+      ctx.fillStyle = "#d62828";
+      ctx.fillRect(-14, -3, 28, 6);
+      ctx.fillRect(-3, -3, 6, 24);
+
+      ctx.restore();
+    }
+
+    function drawAnarchistDecor(x, y, w, h) {
+      ctx.save();
+      ctx.translate(x + w/2, y + h/2);
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 6;
+
+      // círculo
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // A
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.lineTo(-12, 18);
+      ctx.lineTo(12, 18);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(-14, 0);
+      ctx.lineTo(14, 0);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+
+    function isFireActive(o) {
+      return o.fire && ((frameCount + o.firePhase) % 150) < 78;
+    }
+
+    function drawFireStrip(x, y, width, direction) {
+      ctx.save();
+      const flicker = 5 + Math.sin(frameCount * 0.35) * 3;
+      for (let i = 7; i < width; i += 14) {
+        ctx.fillStyle = i % 28 ? "#ff6b00" : "#ffd43b";
+        ctx.beginPath();
+        ctx.moveTo(x + i - 7, y);
+        ctx.quadraticCurveTo(x + i, y + direction * (20 + flicker), x + i + 7, y);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawObstacles() {
+      ctx.fillStyle = "#0f766e";
+
+      for (const o of obstacles) {
+        const topH = o.gapY - o.gapHeight/2;
+        const bottomY = o.gapY + o.gapHeight/2;
+
+        // tubos rectangulares (hitbox perfecto)
+        ctx.fillRect(o.x, 0, o.width, topH);
+        ctx.fillRect(o.x, bottomY, o.width, canvas.height - bottomY);
+
+        if (isFireActive(o)) {
+          drawFireStrip(o.x, topH, o.width, 1);
+          drawFireStrip(o.x, bottomY, o.width, -1);
+        }
+
+        if (o.style === "comunista") {
+          drawCommunistDecor(o.x, topH - 50, o.width, 50);
+          drawCommunistDecor(o.x, bottomY, o.width, 50);
+        } else {
+          drawAnarchistDecor(o.x, topH - 50, o.width, 50);
+          drawAnarchistDecor(o.x, bottomY, o.width, 50);
+        }
+      }
+    }
+
+
+    function spawnRivalBird() {
+      rivalBirds.push({
+        x: canvas.width + 45,
+        y: 70 + Math.random() * (canvas.height - 175),
+        baseY: 70 + Math.random() * (canvas.height - 175),
+        width: 40,
+        height: 28,
+        phase: Math.random() * Math.PI * 2
+      });
+      playEffect("rival");
+    }
+
+    function drawRivalBirds() {
+      rivalBirds.forEach(r => {
+        ctx.save();
+        ctx.translate(r.x + r.width/2, r.y + r.height/2);
+        ctx.scale(-1, 1);
+        ctx.fillStyle = "#5c3d99";
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 18, 11, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#7950c8";
+        ctx.beginPath();
+        ctx.ellipse(-5, Math.sin(frameCount * 0.4 + r.phase) * 6, 12, 6, -0.35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#ffb703";
+        ctx.beginPath();
+        ctx.moveTo(17, -2); ctx.lineTo(27, 2); ctx.lineTo(17, 5); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(10, -5, 3, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(11, -5, 1.2, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      });
+    }
+
+    /*****************************************************
+     * 9) COLISIONES
+     *****************************************************/
+    function triggerCollisionImpact() {
+      if (gameState !== "playing") return;
+
+      hardStopFlightAudio();
+      gameState = "impact";
+      impactProgress = 0;
+      playOuch();
+
+      const startTime = performance.now();
+      const duration = 430;
+
+      function animateImpact(now) {
+        if (gameState !== "impact") return;
+        const elapsed = now - startTime;
+        impactProgress = Math.min(1, elapsed / duration);
+        const intensity = 1 - impactProgress;
+        const shakeX = (Math.random() - 0.5) * 18 * intensity;
+        const shakeY = (Math.random() - 0.5) * 14 * intensity;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(shakeX, shakeY);
+        drawBackground();
+        drawObstacles();
+        drawRivalBirds();
+        drawBird(false, true);
+        ctx.restore();
+
+        // Destello y líneas de impacto alrededor del pajarito.
+        const centerX = bird.x + bird.width / 2;
+        const centerY = bird.y + bird.height / 2;
+        ctx.save();
+        ctx.globalAlpha = 0.75 * intensity;
+        ctx.fillStyle = "#fff4a8";
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 48 + impactProgress * 24, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#ff3b30";
+        ctx.lineWidth = 5;
+        for (let i = 0; i < 10; i++) {
+          const angle = (Math.PI * 2 * i) / 10;
+          const inner = 34 + impactProgress * 10;
+          const outer = 64 + impactProgress * 22;
+          ctx.beginPath();
+          ctx.moveTo(centerX + Math.cos(angle) * inner, centerY + Math.sin(angle) * inner);
+          ctx.lineTo(centerX + Math.cos(angle) * outer, centerY + Math.sin(angle) * outer);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        if (elapsed < duration) {
+          impactAnimationFrame = requestAnimationFrame(animateImpact);
+        } else {
+          impactAnimationFrame = null;
+          impactProgress = 0;
+          askQuestion();
+        }
+      }
+
+      impactAnimationFrame = requestAnimationFrame(animateImpact);
+    }
+
+    function checkCollisions() {
+      if (bird.y < 0 || bird.y + bird.height > canvas.height - 40) {
+        triggerCollisionImpact();
+        return;
+      }
+
+      for (const o of obstacles) {
+        const topH = o.gapY - o.gapHeight/2;
+        const bottomY = o.gapY + o.gapHeight/2;
+
+        const bx1 = bird.x;
+        const bx2 = bird.x + bird.width;
+        const by1 = bird.y;
+        const by2 = bird.y + bird.height;
+
+        const ox1 = o.x;
+        const ox2 = o.x + o.width;
+
+        const overlapX = bx2 > ox1 && bx1 < ox2;
+        const hitsTop = by1 < topH;
+        const hitsBottom = by2 > bottomY;
+
+        if (overlapX && (hitsTop || hitsBottom)) {
+          triggerCollisionImpact();
+          return;
+        }
+
+        if (overlapX && isFireActive(o)) {
+          const fireDepth = 23;
+          const touchesFire = by1 < topH + fireDepth || by2 > bottomY - fireDepth;
+          if (touchesFire) {
+            triggerCollisionImpact();
+            return;
+          }
+        }
+      }
+
+      for (const r of rivalBirds) {
+        const overlap = bird.x + bird.width > r.x && bird.x < r.x + r.width &&
+          bird.y + bird.height > r.y && bird.y < r.y + r.height;
+        if (overlap) {
+          triggerCollisionImpact();
+          return;
+        }
+      }
+    }
+
+    /*****************************************************
+     * 10) PÁJARO (FLACO + ALAS ANIMADAS)
+     *****************************************************/
+    function drawLegacyBird() {
+      const {x,y,width,height} = bird;
+
+      ctx.save();
+      const angle = Math.max(-0.4, Math.min(0.4, bird.vy * 0.03));
+      ctx.translate(x + width/2, y + height/2);
+      ctx.rotate(angle);
+
+      // Cuerpo rojo flaco
+      ctx.fillStyle = "#d62828";
+      ctx.beginPath();
+      ctx.ellipse(0, 0, (width/2) - 4, (height/2) + 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Alas / plumas verdes animadas
+      const wingOffset = Math.sin(wingPhase) * 4;
+      ctx.fillStyle = "#00ff55";
+
+      // izquierda
+      ctx.beginPath();
+      ctx.ellipse(-width/2 + 4, wingOffset, 7, 13, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // derecha
+      ctx.beginPath();
+      ctx.ellipse(width/2 - 4, -wingOffset, 7, 13, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // panza blanca
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.ellipse(0, height * 0.15, width/2.1, height/2.4, 0, 0, Math.PI*2);
+      ctx.fill();
+
+      // copito
+      ctx.fillStyle = "#b21f2b";
+      ctx.beginPath();
+      ctx.moveTo(-4, -height/2 - 2);
+      ctx.lineTo(2, -height/2 - 8);
+      ctx.lineTo(8, -height/2 - 2);
+      ctx.fill();
+
+      // cola
+      ctx.fillStyle = "#111";
+      ctx.beginPath();
+      ctx.moveTo(-width/2 - 6, 4);
+      ctx.lineTo(-width/2 - 1, -2);
+      ctx.lineTo(-width/2 + 3, 6);
+      ctx.fill();
+
+      // pico
+      ctx.fillStyle = "#ffd52e";
+      ctx.beginPath();
+      ctx.moveTo(width/2 + 2, 0);
+      ctx.lineTo(width/2 + 12, -5);
+      ctx.lineTo(width/2 + 12, 5);
+      ctx.fill();
+
+      // ojo
+      const eyeX = width * 0.15;
+      const eyeY = -height * 0.15;
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(eyeX, eyeY, 4.8, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      ctx.arc(eyeX+1, eyeY+0.5, 2.2, 0, Math.PI*2);
+      ctx.fill();
+
+      // ceja
+      ctx.fillStyle = "#111";
+      ctx.save();
+      ctx.translate(eyeX - 3, eyeY - 5);
+      ctx.rotate(-0.2);
+      ctx.fillRect(0, 0, 11, 2.5);
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    function drawBird(perched = false, impacted = false) {
+      const {x, y, width, height} = bird;
+      const wingBeat = perched ? 0 : Math.sin(wingPhase);
+      const angle = perched ? 0 : Math.max(-0.42, Math.min(0.42, bird.vy * 0.03));
+
+      ctx.save();
+      ctx.translate(x + width / 2, y + height / 2);
+      ctx.rotate(impacted ? -0.52 : angle);
+
+      if (impacted) {
+        const squash = 1 - 0.18 * (1 - impactProgress);
+        ctx.scale(1.18, squash);
+      }
+
+      // Cola azul oscuro.
+      ctx.fillStyle = "#245b8f";
+      ctx.beginPath();
+      ctx.moveTo(-width / 2 + 4, 3);
+      ctx.lineTo(-width / 2 - 15, -7);
+      ctx.lineTo(-width / 2 - 10, 7);
+      ctx.lineTo(-width / 2 - 18, 15);
+      ctx.lineTo(-width / 2 + 4, 11);
+      ctx.closePath();
+      ctx.fill();
+
+      // Cuerpo celeste, inspirado en la apariencia del emoji 🐦.
+      ctx.fillStyle = impacted ? "#4d8fb8" : "#5eb6df";
+      ctx.beginPath();
+      ctx.ellipse(-2, 2, width * 0.43, height * 0.46, -0.12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cabeza redondeada.
+      ctx.fillStyle = impacted ? "#4383ad" : "#66c2e8";
+      ctx.beginPath();
+      ctx.arc(width * 0.23, -height * 0.18, height * 0.34, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Ala principal animada.
+      ctx.fillStyle = "#276da8";
+      ctx.save();
+      ctx.translate(-6, 1);
+      ctx.rotate(perched ? 0.12 : -0.18 - wingBeat * 0.32);
+      ctx.beginPath();
+      ctx.ellipse(-3, 3 + wingBeat * 3, 15, 9, -0.15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Pechito claro.
+      ctx.fillStyle = "#dff5ff";
+      ctx.beginPath();
+      ctx.ellipse(8, 8, 12, 9, -0.15, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Pico amarillo.
+      ctx.fillStyle = "#f5b82e";
+      ctx.beginPath();
+      ctx.moveTo(width / 2 - 1, -height * 0.18);
+      ctx.lineTo(width / 2 + 13, -height * 0.10);
+      ctx.lineTo(width / 2 - 1, -height * 0.01);
+      ctx.closePath();
+      ctx.fill();
+
+      // Ojo expresivo; al impactar se cierra.
+      if (impacted) {
+        ctx.strokeStyle = "#17202a";
+        ctx.lineWidth = 2.7;
+        ctx.beginPath();
+        ctx.moveTo(10, -10);
+        ctx.lineTo(18, -5);
+        ctx.moveTo(18, -10);
+        ctx.lineTo(10, -5);
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(15, -8, 5.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#17202a";
+        ctx.beginPath();
+        ctx.arc(17, -8, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(18, -9, 0.9, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Patitas visibles al posarse en el nido.
+      if (perched) {
+        ctx.strokeStyle = "#e39a22";
+        ctx.lineWidth = 2.4;
+        ctx.lineCap = "round";
+        [-5, 6].forEach(footX => {
+          ctx.beginPath();
+          ctx.moveTo(footX, height * 0.38);
+          ctx.lineTo(footX, height * 0.56);
+          ctx.lineTo(footX + 5, height * 0.60);
+          ctx.moveTo(footX, height * 0.56);
+          ctx.lineTo(footX - 4, height * 0.60);
+          ctx.stroke();
+        });
+      }
+
+      ctx.restore();
+    }
+
+    /*****************************************************
+     * 11) DIBUJO GENERAL + LOOP
+     *****************************************************/
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBackground();
+      drawObstacles();
+      drawRivalBirds();
+      drawBird();
+    }
+
+    function loop() {
+      if (gameState === "playing") {
+        frameCount++;
+        wingPhase += 0.25;
+
+        bird.vy += gravity;
+        bird.y += bird.vy;
+
+        if (frameCount % currentDifficulty.spawn === 0) {
+          spawnObstacle();
+        }
+        if (frameCount > 150 && frameCount % currentDifficulty.rivalSpawn === 0 && rivalBirds.length < 2) {
+          spawnRivalBird();
+        }
+
+        rivalBirds.forEach(r => {
+          r.x -= currentDifficulty.rivalSpeed;
+          r.y = r.baseY + Math.sin(frameCount * 0.035 + r.phase) * 32;
+        });
+        rivalBirds = rivalBirds.filter(r => r.x + r.width > -30);
+
+        obstacles.forEach(o => {
+          o.x -= currentDifficulty.speed;
+          o.gapY = o.baseGapY + Math.sin(frameCount * o.motionSpeed + o.motionPhase) * o.motionAmplitude;
+          if (o.fire && !o.fireWarned && isFireActive(o) && o.x < canvas.width * 0.72 && o.x > canvas.width * 0.58) {
+            o.fireWarned = true;
+            playEffect("fire");
+          }
+
+          // sumar puntos al pasar el tubo
+          if (!o.passed && o.x + o.width < bird.x) {
+            o.passed = true;
+            score++;
+            scoreLabel.textContent = `Meta: ${Math.min(score, currentLevel.goal)}/${currentLevel.goal}`;
+
+            playEffect("score");
+
+            if (score >= currentLevel.goal) {
+              beginLevelComplete();
+            }
+          }
+        });
+
+        if (gameState === "playing") checkCollisions();
+      }
+
+      draw();
+
+      if (gameState === "playing") {
+        requestAnimationFrame(loop);
+      }
+    }
+
+    /*****************************************************
+     * 12) EVENTOS DE INTERFAZ / MÚSICA
+     *****************************************************/
+    function updateMusicToggleLabel() {
+      musicToggleBtn.textContent = musicEnabled
+        ? "🎵 Música: ON"
+        : "🎵 Música: OFF";
+    }
+
+    musicToggleBtn.addEventListener("click", () => {
+      musicEnabled = !musicEnabled;
+      updateMusicToggleLabel();
+
+      if (musicEnabled) {
+        if (gameState === "playing") startFlightMusic();
+      } else {
+        hardStopFlightAudio();
+        stopFeedbackSound();
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      }
+    });
+
+    testSoundBtn.addEventListener("click", () => {
+      getAudioContext();
+      playEffect("score");
+    });
+
+    optionButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.dataset.index);
+        if (gameState === "question") handleAnswer(idx);
+      });
+    });
+
+    difficultyButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentDifficultyKey = btn.dataset.diff;
+        currentDifficulty = difficultyConfig[currentDifficultyKey];
+        difficultyButtons.forEach(button => button.classList.toggle("selected", button === btn));
+      });
+    });
+
+    levelStartButton.addEventListener("click", startGame);
+
+    backToLevelsButton.addEventListener("click", () => {
+      stopFeedbackSound();
+      if (finishAnimationFrame) cancelAnimationFrame(finishAnimationFrame);
+      finishAnimationFrame = null;
+      goToMenu();
+    });
+
+    /*****************************************************
+     * 13) ARRANQUE
+     *****************************************************/
+    draw();
+    updateMusicToggleLabel();
+    difficultyLabel.textContent = "Dificultad: " + currentDifficulty.label;
+  </script>
+</body>
+</html>
