@@ -1867,8 +1867,8 @@
     let currentQuestionIndex = null;
     let questionCycleIndex = 0;
 
-    const gravity = 0.35;
-    const jumpStrength = -6.8;
+    const gravity = 0.34;
+    const jumpStrength = -6.6;
 
     const bird = {
       x: canvas.width * 0.15,
@@ -1879,9 +1879,9 @@
     };
 
     const difficultyConfig = {
-      facil:  { label:"Fácil",   speed:4.32, gap:112, spawn:104, motion:52, motionSpeed:0.031, fireChance:0.480, rivalSpawn:201, rivalSpeed:5.52 },
-      medio:  { label:"Medio",   speed:5.24, gap:86, spawn:82, motion:68, motionSpeed:0.038, fireChance:0.550, rivalSpawn:146, rivalSpeed:6.69 },
-      dificil:{ label:"Difícil", speed:6.16, gap:78, spawn:76, motion:82, motionSpeed:0.045, fireChance:0.620, rivalSpawn:115, rivalSpeed:7.86 }
+      facil:  { label:"Fácil",   speed:3.65, gap:142, spawn:120, motion:28, motionSpeed:0.023, fireChance:0.28, rivalSpawn:245, rivalSpeed:4.40 },
+      medio:  { label:"Medio",   speed:4.25, gap:120, spawn:108, motion:42, motionSpeed:0.030, fireChance:0.34, rivalSpawn:210, rivalSpeed:5.00 },
+      dificil:{ label:"Difícil", speed:4.95, gap:100, spawn:96, motion:58, motionSpeed:0.037, fireChance:0.42, rivalSpawn:180, rivalSpeed:5.70 }
     };
 
     const levelsConfig = Array.from({ length: 14 }, (_, index) => ({
@@ -2389,7 +2389,8 @@
         motionSpeed: currentDifficulty.motionSpeed * (0.82 + Math.random() * 0.36),
         motionPhase: Math.random() * Math.PI * 2,
         passed: false,
-        fire: Math.random() < currentDifficulty.fireChance,
+        // Los primeros cinco obstáculos son siempre sin fuego.
+        fire: score >= 5 && Math.random() < currentDifficulty.fireChance,
         firePhase: Math.random() * 180,
         fireWarned: false,
         style: Math.random() < 0.5 ? "comunista" : "anarquista"
@@ -2448,7 +2449,8 @@
 
 
     function isFireActive(o) {
-      return o.fire && ((frameCount + o.firePhase) % 150) < 78;
+      // El fuego permanece apagado más tiempo del que permanece encendido.
+      return o.fire && ((frameCount + o.firePhase) % 170) < 65;
     }
 
     function drawFireStrip(x, y, width, direction) {
@@ -2850,13 +2852,14 @@
         if (frameCount % currentDifficulty.spawn === 0) {
           spawnObstacle();
         }
-        if (frameCount > 150 && frameCount % currentDifficulty.rivalSpawn === 0 && rivalBirds.length < 2) {
+        // Los pájaros rivales aparecen recién después de superar ocho obstáculos.
+        if (score >= 8 && frameCount % currentDifficulty.rivalSpawn === 0 && rivalBirds.length < 1) {
           spawnRivalBird();
         }
 
         rivalBirds.forEach(r => {
           r.x -= currentDifficulty.rivalSpeed;
-          r.y = r.baseY + Math.sin(frameCount * 0.035 + r.phase) * 32;
+          r.y = r.baseY + Math.sin(frameCount * 0.030 + r.phase) * 20;
         });
         rivalBirds = rivalBirds.filter(r => r.x + r.width > -30);
 
