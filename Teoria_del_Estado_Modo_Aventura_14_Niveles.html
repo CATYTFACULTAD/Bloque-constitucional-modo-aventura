@@ -1914,11 +1914,11 @@
         label: ["Fácil","Medio","Difícil"][rank],
         speed: 3.0 + rank*.72 + levelNumber*.095,
         gap: Math.max(80, 142 - rank*20 - levelNumber*2.1),
-        spawn: Math.max(76, 126 - rank*14 - levelNumber*1.8),
+        spawn: Math.round(Math.max(76, 126 - rank*14 - levelNumber*1.8)),
         motion: levelNumber < 3 ? 0 : 28 + levelNumber*3 + rank*12,
         motionSpeed: levelNumber < 3 ? 0 : .020 + levelNumber*.0012 + rank*.006,
         fireChance: levelNumber < 8 ? 0 : Math.min(.62, .20 + advanced*.035 + rank*.07),
-        rivalSpawn: levelNumber < 8 ? 999999 : Math.max(115, 260 - advanced*13 - rank*35),
+        rivalSpawn: levelNumber < 8 ? 999999 : Math.round(Math.max(115, 260 - advanced*13 - rank*35)),
         rivalSpeed: 4.2 + levelNumber*.13 + rank*.65
       };
     }
